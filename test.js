@@ -95,7 +95,7 @@ test('Stream chunk', function () {
 });
 
 
-test('Chain of sound processing', function () {
+test.only('Chain of sound processing', function () {
 	var panner = context.createStereoPanner();
 	panner.pan.value = -1;
 
@@ -105,7 +105,7 @@ test('Chain of sound processing', function () {
 
 	Generator(function (time) {
 		return Math.sin(Math.PI * 2 * 440 * time);
-	}, {duration: 0.2})
+	}, {duration: 0.9})
 	.pipe(stream);
 
 	stream.connect(panner);

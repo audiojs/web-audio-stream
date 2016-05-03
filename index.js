@@ -22,6 +22,8 @@ function WAAStream (options) {
 
 	extend(this, options);
 
+	this.sampleRate = this.context.sampleRate;
+
 	Writable.call(this, {
 		//we need object mode to recognize any type of input
 		objectMode: true,
@@ -158,38 +160,38 @@ WAAStream.prototype.initBufferMode = function () {
 	//output buffer
 	var buffer = self.node.buffer;
 
-	//save time of start
-	var lastMoment = self.context.currentTime;
-	var initMoment = lastMoment;
-
-	//offset within the output buffer, in samples
-	self.offset = 0;
-
 	//audio buffer realtime ticked cycle
-	//FIXME: find a way to receive target starving callback here instead of interval
-	var tickInterval = setInterval(tick, Math.floor(buffer.duration * 1000 / 3));
+	//FIXME: find a way to receive target starving callback here instead of unguaranteed timeouts
+	var tickTimeout = setTimeout(tick);
+
+	//once source self is finished - disconnect modules
+	self.once('end', function () {
+		clearTimeout(tickTimeout);
+		self.node.stop();
+		self.node.disconnect();
+	});
 
 	self.node.start();
 
-	//current part of the buffer
-	var activePart = 0;
+	//last played count, position from which there is no data filled up
+	var lastCount = 0;
+
+	//time of start
+	//FIXME: find out why and how this magic coefficient affects buffer scheduling
+	var initTime = self.context.currentTime*1.5;
 
 	//tick function - if the half-buffer is passed - emit the tick event, which will fill the buffer
-	function tick () {
-		var playedTime = self.context.currentTime - initMoment;
-		var playedCount = Math.round(playedTime * self.context.sampleRate);
-		var offsetCount = playedCount % buffer.length;
-
-		//displacement within the buffer
-		var currentPart = Math.floor(offsetCount / self.samplesPerFrame);
+	function tick (a) {
+		var playedTime = self.context.currentTime - initTime;
+		var playedCount = playedTime * self.sampleRate;
 
 		//if offset has changed - notify processor to provide a new piece of data
-		if (currentPart != activePart) {
-			activePart = currentPart;
-			self.offset = ((currentPart + 1) % FOLD) * self.samplesPerFrame;
-
+		if (lastCount - playedCount < self.samplesPerFrame) {
 			//send queued data chunk to buffer
-			util.copy(self.shift(), buffer, self.offset);
+			util.copy(self.shift(), buffer, lastCount % buffer.length);
+
+			//increase rendered count
+			lastCount += self.samplesPerFrame;
 
 			//if there is a holding pressure control - release it
 			if (self._release) {
@@ -197,15 +199,20 @@ WAAStream.prototype.initBufferMode = function () {
 				self._release = null;
 				release();
 			}
-		}
-	}
 
-	//once source self is finished - disconnect modules
-	self.once('end', function () {
-		clearInterval(tickInterval);
-		self.node.stop();
-		self.node.disconnect();
-	});
+			//call tick extra-time in case if there is a room for buffer
+			//it will plan timeout, if none
+			tick();
+		}
+		//else plan tick for the expected time of starving
+		else {
+			//time of starving is when played time reaches (last count time) - half-duration
+			var starvingTime = (lastCount - self.samplesPerFrame) / self.sampleRate;
+			var remainingTime = starvingTime - playedTime;
+			tickTimeout = setTimeout(tick, remainingTime * 1000);
+		}
+
+	}
 
 	return self;
 }
@@ -292,4 +299,7 @@ WAAStream.prototype.end = function () {
  */
 WAAStream.prototype.connect = function (target) {
 	this.node.connect(target);
+};
+WAAStream.prototype.disconnect = function (target) {
+	this.node.disconnect(target);
 };

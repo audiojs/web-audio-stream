@@ -36,6 +36,7 @@
     "inherits": "^2.0.1",
     "is-audio-buffer": "^1.0.1",
     "pcm-util": "^2.0.2",
+    "performance-now": "^0.2.0",
     "xtend": "^4.0.1"
   }
 }
