@@ -45,7 +45,7 @@ src.pipe(stream);
 setTimeout(stream.end, 1000);
 ```
 
-Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with the one indicated in options.
+Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with passed options.
 
 
 ## Related
