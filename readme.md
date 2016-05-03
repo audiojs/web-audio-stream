@@ -1,4 +1,4 @@
-Web Audio API writable stream. Provides interface between Web Audio API and node streams. Send any PCM data to web-audio by via write/pipe.
+Web Audio API writable stream. Provides interface between Web Audio API and node streams. Send any PCM data to web-audio via write/pipe.
 
 ## Usage
 
