@@ -16,6 +16,9 @@ var stream = WAAStream({
 	//method of connection: BUFFER_MODE, SCRIPT_MODE, WORKER_MODE (pending)
 	mode: WAAStream.BUFFER_MODE,
 
+	//end stream, disconnect node if piped input stream ends
+	autoend: true,
+
 	//pcm options, used if raw buffers are streamed into
 	channels: 2,
 	sampleRate: 44100,

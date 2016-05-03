@@ -8,6 +8,7 @@ var context = require('audio-context');
 var extend = require('xtend/mutable');
 var pcm = require('pcm-util');
 var util = require('audio-buffer-utils');
+var isAudioBuffer = require('is-audio-buffer');
 
 
 module.exports = WAAStream;
@@ -47,6 +48,23 @@ function WAAStream (options) {
 
 	//queued data to send to output
 	this.data = util.create(this.channels, this.samplesPerFrame);
+
+	//manage input pipes number
+	this.on('pipe', function (source) {
+		var self = this;
+
+		self.inputsCount++;
+
+		//do autoend
+		if (self.autoend) {
+			source.once('end', function () {
+				self.end();
+			});
+		}
+
+	}).on('unpipe', function (source) {
+		this.inputsCount--;
+	});
 }
 
 
@@ -66,6 +84,16 @@ WAAStream.prototype.mode = WAAStream.BUFFER_MODE;
 
 /** Default audio context */
 WAAStream.prototype.context = context;
+
+
+/** Count of inputs */
+WAAStream.prototype.inputsCount = 0;
+
+
+/**
+ * Perform autoend if last input has ended
+ */
+WAAStream.prototype.autoend = true;
 
 
 /**
@@ -196,6 +224,8 @@ WAAStream.prototype._write = function (chunk, enc, cb) {
  * Data control - plan a new chunk
  */
 WAAStream.prototype.push = function (chunk) {
+	if (!isAudioBuffer(chunk)) chunk = util.create(chunk);
+
 	this.data = util.concat(this.data, chunk);
 }
 
@@ -224,6 +254,7 @@ WAAStream.prototype.shift = function (size) {
 /**
  * Overrides stream’s end to ensure event.
  */
+
 WAAStream.prototype.end = function () {
 	var self = this;
 

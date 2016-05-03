@@ -32,7 +32,9 @@
   "dependencies": {
     "audio-buffer-utils": "^3.0.0",
     "audio-context": "^0.1.0",
+    "audio-generator": "^2.0.3",
     "inherits": "^2.0.1",
+    "is-audio-buffer": "^1.0.1",
     "pcm-util": "^2.0.2",
     "xtend": "^4.0.1"
   }

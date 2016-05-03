@@ -3,14 +3,14 @@ var context = require('audio-context');
 var WAAStream = require('./');
 var AudioBuffer = require('audio-buffer');
 var util = require('audio-buffer-utils');
+var Generator = require('audio-generator');
 
 
-test.only('Send chunk', function () {
-	var stream = WAAStream();
+test('Write chunk', function () {
+	test('AudioBuffer', function (done) {
+		var stream = WAAStream();
+		stream.connect(context.destination);
 
-	stream.connect(context.destination);
-
-	test.only('AudioBuffer', function (done) {
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
 
@@ -19,32 +19,81 @@ test.only('Send chunk', function () {
 		setTimeout(function () {
 			stream.end();
 			done();
-		}, 500);
+		}, 300);
 	});
 
-	test('ArrayBuffer', function () {
+	test('Float32Array', function (done) {
+		var stream = WAAStream();
+		stream.connect(context.destination);
 
+		var buf = new AudioBuffer(1024*8);
+		util.noise(buf);
+
+		stream.write(buf.getChannelData(0));
+
+		setTimeout(function () {
+			stream.end();
+			done();
+		}, 300);
+	});
+
+	test('Array', function (done) {
+		var stream = WAAStream();
+		stream.connect(context.destination);
+
+		var a = Array(1024).fill(0).map(function () {return Math.random()});
+
+		stream.write(a);
+
+		setTimeout(function () {
+			stream.end();
+			done();
+		}, 300);
+	});
+
+	test('ArrayBuffer', function (done) {
+		var stream = WAAStream();
+		stream.connect(context.destination);
+
+		var buf = new AudioBuffer(1024*8);
+		util.noise(buf);
+
+		stream.write(buf.getChannelData(0).buffer);
+
+		setTimeout(function () {
+			stream.end();
+			done();
+		}, 300);
 	});
 
 
-	test('Buffer', function () {
+	test('Buffer', function (done) {
+		var stream = WAAStream();
+		stream.connect(context.destination);
 
+		var buf = new AudioBuffer(1024*8);
+		util.noise(buf);
+
+		buf = new Buffer(buf.getChannelData(0).buffer);
+
+		stream.write(buf);
+
+		setTimeout(function () {
+			stream.end();
+			done();
+		}, 300);
 	});
 
-	test('Float32Array', function () {
-
-	});
-
-	test('Array', function () {
-
-	});
 });
 
 
-test.skip('Stream chunk', function () {
-	var stream = WAAStream();
-
-	stream.connect(context.destination);
+test('Stream chunk', function () {
+	Generator(function (time) {
+		return Math.sin(Math.PI * 2 * 440 * time);
+	}, {duration: 0.5})
+	.on('end', function () {
+	})
+	.pipe(WAAStream()).connect(context.destination);
 });
 
 
