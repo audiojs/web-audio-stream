@@ -10,27 +10,24 @@ var context = require('audio-context');
 
 //create stream instance
 var stream = WAAStream({
-	//audio-context, will be created if omitted
 	context: context,
-
-	//method of connection: BUFFER_MODE, SCRIPT_MODE, WORKER_MODE (pending)
-	mode: WAAStream.BUFFER_MODE,
-
-	//end stream, disconnect node if piped input stream ends
-	autoend: true,
-
-	//pcm options, used if raw buffers are streamed into
 	channels: 2,
 	sampleRate: 44100,
-	interleaved: false
+
+	//BUFFER_MODE, SCRIPT_MODE, WORKER_MODE (pending)
+	mode: WAAStream.BUFFER_MODE,
+
+	//disconnect node if input stream ends
+	autoend: true
 });
 
 
-//connect to audio destination (can be any AudioNode)
+//use as AudioNode
 stream.connect(context.destination);
+stream.disconnect();
 
 
-//place chunk of data (send to WAA)
+//or as stream
 var chunk = new Float32Array(1024);
 for (var i = 0; i < 1024; i++) {
 	chunk[i] = Math.random();
@@ -38,7 +35,6 @@ for (var i = 0; i < 1024; i++) {
 stream.write(chunk);
 
 
-//stream to WAA
 var Generator = require('audio-generator');
 var src = Generator(function (time) {
 	return Math.sin(Math.PI * 2 * time * 440);
@@ -46,9 +42,7 @@ var src = Generator(function (time) {
 src.pipe(stream);
 
 
-//end stream and/or disconnect node
-stream.end();
-stream.disconnect();
+setTimeout(stream.end, 1000);
 ```
 
 Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with the one indicated in options.
