@@ -91,12 +91,24 @@ test('Stream chunk', function () {
 	Generator(function (time) {
 		return Math.sin(Math.PI * 2 * 440 * time);
 	}, {duration: 0.5})
-	.on('end', function () {
-	})
 	.pipe(WAAStream()).connect(context.destination);
 });
 
 
-test.skip('Chain of sound processing', function () {
+test('Chain of sound processing', function () {
+	var panner = context.createStereoPanner();
+	panner.pan.value = -1;
 
+	var stream = WAAStream({
+		autoend: false
+	});
+
+	Generator(function (time) {
+		return Math.sin(Math.PI * 2 * 440 * time);
+	}, {duration: 0.2})
+	.pipe(stream);
+
+	stream.connect(panner);
+
+	panner.connect(context.destination);
 });

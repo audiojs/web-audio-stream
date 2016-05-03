@@ -44,6 +44,10 @@ var src = Generator(function (time) {
 	return Math.sin(Math.PI * 2 * time * 440);
 });
 src.pipe(stream);
+
+
+//end stream and disconnect node
+stream.end();
 ```
 
 Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with the one indicated in options.

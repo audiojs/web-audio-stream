@@ -93,7 +93,7 @@ WAAStream.prototype.inputsCount = 0;
 /**
  * Perform autoend if last input has ended
  */
-WAAStream.prototype.autoend = true;
+WAAStream.prototype.autoend = false;
 
 
 /**
@@ -227,6 +227,8 @@ WAAStream.prototype.push = function (chunk) {
 	if (!isAudioBuffer(chunk)) chunk = util.create(chunk);
 
 	this.data = util.concat(this.data, chunk);
+
+	this.isEmpty = false;
 }
 
 /**
@@ -235,12 +237,16 @@ WAAStream.prototype.push = function (chunk) {
 WAAStream.prototype.shift = function (size) {
 	size = size || this.samplesPerFrame;
 
+	//if still empty - return existing buffer
+	if (this.isEmpty) return this.data;
+
 	var output = util.slice(this.data, 0, size);
 	util.pad(output, size);
 
 	//shorten known data - if size is too small, fill with silence
 	if (this.data.length <= size) {
 		this.data = util.create(size);
+		this.isEmpty = true;
 	}
 	else {
 		this.data = util.slice(this.data, size);
