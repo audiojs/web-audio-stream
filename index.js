@@ -45,9 +45,6 @@ function WAAStream (options) {
 		throw Error('Unknown mode. Please, write an issue to github.com/audio-lab/web-audio-stream if you have ideas for other modes.')
 	}
 
-	//prerender silence buffer
-	this._silence = util.create(this.channels, this.samplesPerFrame);
-
 	//queued data to send to output
 	this.data = util.create(this.channels, this.samplesPerFrame);
 
@@ -76,12 +73,24 @@ extend(WAAStream.prototype, pcm.defaults);
 
 
 /**
- * Whether to use scriptProcessorNode or other mode of rendering
+ * Rendering modes
  */
 WAAStream.WORKER_MODE = 2;
 WAAStream.SCRIPT_MODE = 1;
 WAAStream.BUFFER_MODE = 0;
-WAAStream.prototype.mode = WAAStream.BUFFER_MODE;
+
+
+/**
+ * There is an opinion that script mode is better.
+ * https://github.com/brion/audio-feeder/issues/13
+ *
+ * But for me there are moments of glitch when it infinitely cycles sound. Very desperate.
+ *
+ * But buffer mode also tend to create noisy clicks. Not sure why, cannot remove that.
+ * With script mode I at least release responsibility.
+ *
+ */
+WAAStream.prototype.mode = WAAStream.SCRIPT_MODE;
 
 
 /** Default audio context */
@@ -101,42 +110,43 @@ WAAStream.prototype.autoend = false;
 /**
  * Init scriptProcessor-based rendering.
  * Each audioprocess event triggers tick, which releases pipe
- *
- * FIXME: this is really unstable scheduler. setTimeout-based one is a way better
  */
 WAAStream.prototype.initScriptMode = function () {
 	var self = this;
 
 	//buffer source node
-	self.bufferNode = self.context.createBufferSource();
-	self.bufferNode.loop = true;
-	self.bufferNode.buffer = util.create(self.channels, self.format.samplesPerFrame);
-	self.buffer = self.bufferNode.buffer;
+	var bufferNode = self.context.createBufferSource();
+	bufferNode.loop = true;
+	bufferNode.buffer = util.create(self.channels, self.samplesPerFrame);
+	var buffer = bufferNode.buffer;
 
-	self.scriptNode = self.context.createScriptProcessor(self.format.samplesPerFrame);
-	self.scriptNode.addEventListener('audioprocess', function (e) {
-		util.copy(e.inputBuffer, e.outputBuffer);
+	self.node = self.context.createScriptProcessor(self.samplesPerFrame);
+	self.node.addEventListener('audioprocess', function (e) {
+		// util.copy(e.inputBuffer, e.outputBuffer);
 
-		//FIXME: if GC (I guess) is clicked, this guy may just stop generating that evt
-		//possibly there should be a promise-like thing, resetting scriptProcessor, or something... Like, N reserve scriptProcessors
-		util.copy(self._readyData, self.buffer);
-		var release = self._release;
-		self._readyData = null;
-		self._release = null;
-		release();
+		//FIXME: if GC (I guess) is clicked, this guy may just stop generating event
+		//possibly there should be a promise-like thing, resetting scriptProcessor, or something... Like, reserving N scriptProcessors
+		//if it hangs - no more audioprocess events available
+		util.copy(self.shift(), e.outputBuffer);
+
+		//if there is a holding pressure control - release it
+		if (self._release) {
+			var release = self._release;
+			self._release = null;
+			release();
+		}
 	});
 
 
 	//once source self is finished - disconnect modules
 	self.once('end', function () {
-		self.bufferNode.stop();
-		self.scriptNode.disconnect();
+		bufferNode.stop();
+		self.node.disconnect();
 	});
 
 	//start should be done after the connection, or there is a chance it won’t
-	self.bufferNode.connect(self.scriptNode);
-	self.scriptNode.connect(self.context.destination);
-	self.bufferNode.start();
+	bufferNode.connect(self.node);
+	bufferNode.start();
 
 	return self;
 };
@@ -178,10 +188,12 @@ WAAStream.prototype.initBufferMode = function () {
 
 	//time of start
 	//FIXME: find out why and how this magic coefficient affects buffer scheduling
-	var initTime = self.context.currentTime*1.5;
+	var initTime = 0;
 
 	//tick function - if the half-buffer is passed - emit the tick event, which will fill the buffer
 	function tick (a) {
+		if (!initTime) initTime = self.context.currentTime;
+
 		var playedTime = self.context.currentTime - initTime;
 		var playedCount = playedTime * self.sampleRate;
 
@@ -247,17 +259,21 @@ WAAStream.prototype.shift = function (size) {
 	//if still empty - return existing buffer
 	if (this.isEmpty) return this.data;
 
-	var output = util.slice(this.data, 0, size);
-	util.pad(output, size);
+	var output = this.data;
 
-	//shorten known data - if size is too small, fill with silence
 	if (this.data.length <= size) {
 		this.data = util.create(size);
 		this.isEmpty = true;
 	}
 	else {
+		output = util.slice(output, 0, size);
+
+		//shorten known data
 		this.data = util.slice(this.data, size);
 	}
+
+	//if size is too small, fill with silence
+	util.pad(output, size);
 
 	return output;
 }

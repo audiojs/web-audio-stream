@@ -95,17 +95,17 @@ test('Stream chunk', function () {
 });
 
 
-test.only('Chain of sound processing', function () {
+test('Chain of sound processing', function () {
 	var panner = context.createStereoPanner();
 	panner.pan.value = -1;
 
 	var stream = WAAStream({
-		autoend: false
+		autoend: true
 	});
 
 	Generator(function (time) {
-		return Math.sin(Math.PI * 2 * 440 * time);
-	}, {duration: 0.9})
+		return Math.sin(Math.PI * 2 * 60 * time);
+	}, {duration: 1})
 	.pipe(stream);
 
 	stream.connect(panner);
