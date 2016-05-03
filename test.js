@@ -104,7 +104,7 @@ test('Chain of sound processing', function () {
 	});
 
 	Generator(function (time) {
-		return Math.sin(Math.PI * 2 * 60 * time);
+		return Math.sin(Math.PI * 2 * 80 * time);
 	}, {duration: 1})
 	.pipe(stream);
 

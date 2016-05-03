@@ -46,8 +46,9 @@ var src = Generator(function (time) {
 src.pipe(stream);
 
 
-//end stream and disconnect node
+//end stream and/or disconnect node
 stream.end();
+stream.disconnect();
 ```
 
 Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with the one indicated in options.
