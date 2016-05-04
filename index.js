@@ -34,17 +34,6 @@ function WAAStream (options) {
 	});
 
 
-	//init proper mode
-	if (this.mode === WAAStream.SCRIPT_MODE) {
-		this.initScriptMode();
-	}
-	else if (this.mode === WAAStream.BUFFER_MODE) {
-		this.initBufferMode();
-	}
-	else {
-		throw Error('Unknown mode. Please, write an issue to github.com/audio-lab/web-audio-stream if you have ideas for other modes.')
-	}
-
 	//queued data to send to output
 	this.data = util.create(this.channels, this.samplesPerFrame);
 
@@ -64,6 +53,25 @@ function WAAStream (options) {
 	}).on('unpipe', function (source) {
 		this.inputsCount--;
 	});
+
+
+	//ignore no context
+	if (!this.context || !this.context.sampleRate) {
+		console.warn('No proper context object passed');
+		return;
+	}
+
+
+	//init proper mode
+	if (this.mode === WAAStream.SCRIPT_MODE) {
+		this.initScriptMode();
+	}
+	else if (this.mode === WAAStream.BUFFER_MODE) {
+		this.initBufferMode();
+	}
+	else {
+		throw Error('Unknown mode. Please, write an issue to github.com/audio-lab/web-audio-stream if you have ideas for other modes.')
+	}
 }
 
 
@@ -314,8 +322,10 @@ WAAStream.prototype.end = function () {
  * WAA connect interface
  */
 WAAStream.prototype.connect = function (target) {
-	this.node.connect(target);
+	this.node && this.node.connect(target);
+	return this;
 };
 WAAStream.prototype.disconnect = function (target) {
-	this.node.disconnect(target);
+	this.node && this.node.disconnect(target);
+	return this;
 };
