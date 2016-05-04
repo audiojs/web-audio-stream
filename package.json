@@ -1,13 +1,15 @@
 {
   "name": "web-audio-stream",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Stream interface for Web Audio API",
   "main": "index.js",
   "scripts": {
     "test": "budo test.js",
     "test:browser": "budo test.js"
   },
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/audio-lab/web-audio-stream.git"
