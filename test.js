@@ -112,3 +112,6 @@ test('Chain of sound processing', function () {
 
 	panner.connect(context.destination);
 });
+
+
+test('Delayed connection/start');

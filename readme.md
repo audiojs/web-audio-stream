@@ -1,4 +1,4 @@
-Web Audio API writable stream. Provides interface between Web Audio API and node streams. Send any PCM data to web-audio via write/pipe.
+Web Audio API stream. Provides interface between Web Audio API and streams. Send any PCM data to Web Audio API (writable mode) [or connect any AudioNode to stream (readable mode) - WIP].
 
 ## Usage
 
@@ -8,7 +8,7 @@ Web Audio API writable stream. Provides interface between Web Audio API and node
 var WAAStream = require('web-audio-stream');
 var context = require('audio-context');
 
-//create stream instance
+//create stream instance, each option is optional
 var stream = WAAStream({
 	context: context,
 	channels: 2,
@@ -22,24 +22,25 @@ var stream = WAAStream({
 });
 
 
-//use as AudioNode
+//use as an AudioNode
 stream.connect(context.destination);
 stream.disconnect();
 
 
-//or as stream
-var chunk = new Float32Array(1024);
-for (var i = 0; i < 1024; i++) {
-	chunk[i] = Math.random();
-}
-stream.write(chunk);
-
-
+//as a stream
 var Generator = require('audio-generator');
 var src = Generator(function (time) {
 	return Math.sin(Math.PI * 2 * time * 440);
 });
 src.pipe(stream);
+
+
+//or simply send data to web-audio
+var chunk = new Float32Array(1024);
+for (var i = 0; i < 1024; i++) {
+	chunk[i] = Math.random();
+}
+stream.write(chunk);
 
 
 setTimeout(stream.end, 1000);
