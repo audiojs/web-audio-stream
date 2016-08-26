@@ -112,7 +112,7 @@ WAAStream.BUFFER_MODE = 0;
  * But buffer mode also tend to create noisy clicks. Not sure why, cannot remove that.
  * With script mode I at least defer my responsibility.
  */
-WAAStream.prototype.mode = WAAStream.SCRIPT_MODE;
+WAAStream.prototype.mode = WAAStream.BUFFER_MODE;
 
 
 /** Default audio context */
@@ -265,12 +265,35 @@ WAAStream.prototype._write = function (chunk, enc, cb) {
  * Data control - plan a new chunk
  */
 WAAStream.prototype.push = function (chunk) {
-	if (!isAudioBuffer(chunk)) chunk = util.create(chunk);
+	if (!isAudioBuffer(chunk)) {
+		chunk = util.create(chunk);
+	}
 
 	this.data = util.concat(this.data, chunk);
 
 	this.isEmpty = false;
 }
+
+
+let el = document.body.appendChild(document.createElement('div'));
+el.style.cssText = `
+font-family: wavefont;
+max-width: 100vw;
+word-break: break-all;
+white-space: pre-wrap;
+font-size: 32px;
+`;
+
+function draw (arr) {
+	let str = '';
+
+	for (let i = 0; i < arr.length; i++) {
+		str += String.fromCharCode(0x200 + Math.floor(arr[i] * 128 * 5));
+	}
+
+	el.innerHTML += '\n' + str;
+}
+
 
 /**
  * Shift planned chunk. If there is not enough data - release zeros
