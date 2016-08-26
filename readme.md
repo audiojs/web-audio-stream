@@ -29,7 +29,7 @@ Generator(time => Math.sin(Math.PI * 2 * time * 440))
 
 ## API
 
-<details><summary>`const {Readable, Writable} = require('web-audio-stream');`</summary>
+<details><summary>**`const {Readable, Writable} = require('web-audio-stream');`**</summary>
 
 Require stream instance, by default writable. Or require separate streams:
 
@@ -42,7 +42,7 @@ const Writable = require('web-audio-stream/writable');
 ```
 </details>
 
-<details><summary>`let writable = Writable(audioNode?, options?)`</summary>
+<details><summary>**`let writable = Writable(audioNode?, options?)`**</summary>
 
 Create writer to web-audio, possibly based on options, and later connect it to audio node. Or maybe pass target audio node directly, maybe with options.
 
@@ -64,7 +64,7 @@ var writable = Writable(context.destination, {
 });
 ```
 </details>
-<details><summary>`writable.connect(audioNode);`</summary>
+<details><summary>**`writable.connect(audioNode);`**</summary>
 
 Connect stream to audio node.
 
@@ -73,12 +73,12 @@ Connect stream to audio node.
 writable.connect(context.destination);
 ```
 </details>
-<details><summary>`writable.disconnect();`</summary>
+<details><summary>**`writable.disconnect();`**</summary>
 
 Disconnect from target audionode, end writing, dispose stream.
 
 </details>
-<details><summary>`stream.pipe(writable);`</summary>
+<details><summary>**`stream.pipe(writable);`**</summary>
 
 Pipe stream to writable, or write data directly to it etc, basically it implements _Writable_ stream class.
 
@@ -105,7 +105,7 @@ Stream is smart enough to recognize any type of data placed into it: audioBuffer
 
 </details>
 
-<details><summary>`let readable = Readable(audioNode?, options?)`</summary>
+<details><summary>**`let readable = Readable(audioNode?, options?)`**</summary>
 
 Create reading stream of web-audio-data, possibly with options, and maybe with audioNode to read from.
 
@@ -127,12 +127,12 @@ readable.on('data', buffer => {
 ```
 
 </details>
-<details><summary>`readable.connect(node)`</summary>
+<details><summary>**`readable.connect(node)`**</summary>
 
 Read from audio node. Note that it is reversing order - basically node gets connected to readable stream.
 
 </details>
-<details><summary>`readable.disconnect()`</summary>
+<details><summary>**`readable.disconnect()`**</summary>
 
 End reading.
 
