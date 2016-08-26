@@ -210,11 +210,10 @@ WAAStream.prototype.initBufferMode = function () {
 
 	//time of start
 	//FIXME: find out why and how this magic coefficient affects buffer scheduling
-	var initTime = 0;
+	var initTime = self.context.currentTime;
 
 	//tick function - if the half-buffer is passed - emit the tick event, which will fill the buffer
 	function tick (a) {
-		if (!initTime) initTime = self.context.currentTime;
 
 		var playedTime = self.context.currentTime - initTime;
 		var playedCount = playedTime * self.sampleRate;
@@ -265,9 +264,10 @@ WAAStream.prototype._write = function (chunk, enc, cb) {
  * Data control - plan a new chunk
  */
 WAAStream.prototype.push = function (chunk) {
-	if (!isAudioBuffer(chunk)) {
-		chunk = util.create(chunk);
-	}
+	if (!isAudioBuffer(chunk)) chunk = pcm.toAudioBuffer(chunk, this);
+	// if (!isAudioBuffer(chunk)) {
+	// 	chunk = util.create(this.channels, chunk, this.sampleRate);
+	// }
 
 	this.data = util.concat(this.data, chunk);
 
