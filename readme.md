@@ -20,7 +20,7 @@ Readable(myNode).on('data', (chunk) => {
 
 <details><summary>**`const {Readable, Writable} = require('web-audio-stream');`**</summary>
 
-Require writable stream instance. Also require separate streams:
+Require stream instance, by default writable. Or require separate streams:
 
 ```js
 //web-audio → stream
@@ -32,21 +32,21 @@ const Writable = require('web-audio-stream/writable');
 </details>
 <details><summary>**`let writable = Writable(audioNode?, options?)`**</summary>
 
-Create writer to web-audio, maybe pass options. Or maybe pass target audio node directly, maybe with options.
+Create writer to web-audio, possibly based on options, and later connect it to audio node. Or maybe pass target audio node directly, maybe with options.
 
 ```js
-var WAWritable = require('web-audio-stream/writable');
+var Writable = require('web-audio-stream/writable');
 var context = require('audio-context');
 
 //options or single properties are optional
-var stream = WAWritable({
+var stream = Writable({
 	//audio context
 	context: context,
 	channels: 2,
 	sampleRate: 44100,
 
 	//BUFFER_MODE, SCRIPT_MODE, WORKER_MODE (pending web-audio-workers)
-	mode: WAWritable.BUFFER_MODE,
+	mode: Writable.BUFFER_MODE,
 
 	//disconnect node if input stream ends
 	autoend: true
@@ -55,7 +55,7 @@ var stream = WAWritable({
 </details>
 <details><summary>**`writable.connect(audioNode);`**</summary>
 
-AudioNode interface:
+Connect stream to audio node.
 
 ```js
 //connect/disconnect to AudioNode
@@ -65,7 +65,7 @@ stream.disconnect();
 </details>
 <details><summary>**`audioStream.pipe(writable);`**</summary>
 
-Stream interface.
+Connect stream to other stream, or write to it etc, basically it implements writable stream class.
 
 ```js
 //as a stream
@@ -90,18 +90,31 @@ Stream is smart enough to recognize any type of data placed into it: audioBuffer
 
 </details>
 
-<details><summary>**`let readable = Readable(node?, options?)`**</summary>
+<details><summary>**`let readable = Readable(audioNode?, options?)`**</summary>
 
-Read web-audio to stream.
+Create reading strean of web-audio-data, possibly with options, and maybe even with audioNode to read from.
 
 ```js
 const Readable = require('web-audio-stream/readable');
 
-let readable = Readable(myNode);
+let readable = Readable(myNode, {
+	//audio context, if node is not passed
+	context: context,
+	channels: 2,
+	sampleRate: 44100,
+
+	//ANALYZER_NODE or SCRIPT_NODE
+	mode: Readable.SCRIPT_MODE
+});
 readable.on('data', buffer => {
 	console.log('Got audio buffer');
 });
 ```
+
+</details>
+<details><summary>**`readable.disconnect()`**</summary>
+
+End reading.
 
 </details>
 
