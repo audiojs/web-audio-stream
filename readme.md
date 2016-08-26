@@ -51,11 +51,10 @@ var Writable = require('web-audio-stream/writable');
 var context = require('audio-context');
 
 //options or single properties are optional
-var writable = Writable({
-	//audio context
-	context: context,
-	channels: 2,
-	sampleRate: 44100,
+var writable = Writable(context.destination, {
+	//context: context,
+	//channels: 2,
+	//sampleRate: 44100,
 
 	//BUFFER_MODE, SCRIPT_MODE, WORKER_MODE (pending web-audio-workers)
 	mode: Writable.BUFFER_MODE,
@@ -76,7 +75,7 @@ stream.connect(context.destination);
 </details>
 <details><summary>`writable.disconnect();`</summary>
 
-Dispose stream, end writing.
+Disconnect from target audionode, end writing, dispose stream.
 
 </details>
 <details><summary>`stream.pipe(writable);`</summary>
