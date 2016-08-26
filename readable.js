@@ -71,7 +71,7 @@ function WAAStream (node, options) {
 	this.node.connect(this.context.destination);
 
 	if (node) {
-		node.connect(this.node);
+		this.connect(node);
 	}
 }
 
@@ -95,4 +95,8 @@ WAAStream.prototype._read = function (size) {
 
 WAAStream.prototype.disconnect = function () {
 	this.node.disconnect();
+}
+
+WAAStream.prototype.connect = function (node) {
+	node.connect(this.node);
 }

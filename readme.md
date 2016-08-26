@@ -60,8 +60,12 @@ Connect stream to audio node.
 ```js
 //connect/disconnect to AudioNode
 stream.connect(context.destination);
-stream.disconnect();
 ```
+</details>
+<details><summary>**`writable.disconnect();`**</summary>
+
+Dispose stream, end writing.
+
 </details>
 <details><summary>**`audioStream.pipe(writable);`**</summary>
 
@@ -109,6 +113,11 @@ readable.on('data', buffer => {
 	console.log('Got audio buffer');
 });
 ```
+
+</details>
+<details><summary>**`readable.connect(node)`**</summary>
+
+Read from audio node. Note that it is reversing order - basically node gets connected to readable stream.
 
 </details>
 <details><summary>**`readable.disconnect()`**</summary>
