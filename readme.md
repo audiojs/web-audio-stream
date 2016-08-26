@@ -18,7 +18,7 @@ oscillator.start();
 
 //pipe oscillator audio data to stream
 Readable(oscillator).on('data', (audioBuffer) => {
-	console.log(audioBuffer);
+	console.log(audioBuffer.getChannelData(0));
 });
 
 //pipe generator stream to audio destination
@@ -70,7 +70,7 @@ Connect stream to audio node.
 
 ```js
 //connect/disconnect to AudioNode
-stream.connect(context.destination);
+writable.connect(context.destination);
 ```
 </details>
 <details><summary>`writable.disconnect();`</summary>
