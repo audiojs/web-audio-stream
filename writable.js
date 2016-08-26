@@ -34,6 +34,11 @@ function WAAStream (node, options) {
 
 	if (!(this instanceof WAAStream)) return new WAAStream(node, options);
 
+	//ensure input format
+	var format = pcm.format(options);
+	pcm.normalize(format);
+	options.format = format;
+
 	extend(this, options);
 
 	//ignore no context
@@ -43,6 +48,7 @@ function WAAStream (node, options) {
 	}
 
 	this.sampleRate = this.context.sampleRate;
+
 
 	Writable.call(this, {
 		//we need object mode to recognize any type of input
@@ -264,10 +270,7 @@ WAAStream.prototype._write = function (chunk, enc, cb) {
  * Data control - plan a new chunk
  */
 WAAStream.prototype.push = function (chunk) {
-	if (!isAudioBuffer(chunk)) chunk = pcm.toAudioBuffer(chunk, this);
-	// if (!isAudioBuffer(chunk)) {
-	// 	chunk = util.create(this.channels, chunk, this.sampleRate);
-	// }
+	if (!isAudioBuffer(chunk)) chunk = pcm.toAudioBuffer(chunk, this.format);
 
 	this.data = util.concat(this.data, chunk);
 
