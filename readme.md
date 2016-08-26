@@ -89,7 +89,6 @@ setTimeout(stream.end, 1000);
 Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with passed options.
 
 </details>
-
 <details><summary>**`let readable = Readable(audioNode?, options?)`**</summary>
 
 Create reading strean of web-audio-data, possibly with options, and maybe even with audioNode to read from.
