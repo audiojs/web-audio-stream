@@ -11,7 +11,6 @@ const inherits = require('inherits');
 const context = require('audio-context');
 const extend = require('xtend/mutable');
 const Readable = require('stream').Readable;
-const util = require('audio-buffer-utils');
 const pcm = require('pcm-util');
 const isPlainObject = require('is-plain-obj');
 
@@ -63,7 +62,6 @@ function WAAStream (node, options) {
 
 		//FIXME: should we sink web-audio instantly? Mb just fade it, avoid processor wasting?
 		//seems that fading is the proper option
-		//forward web audio (inputBuffer might be processed by stream)
 		// util.copy(e.inputBuffer, e.outputBuffer);
 	});
 
@@ -81,12 +79,12 @@ WAAStream.WORKER_MODE = 2;
 WAAStream.ANALYZER_MODE = 0;
 WAAStream.SCRIPT_MODE = 1;
 
+WAAStream.prototype.mode = WAAStream.prototype.SCRIPT_MODE;
+
 
 /** Default audio context */
 WAAStream.prototype.context = context;
 
-
-WAAStream.prototype.mode = WAAStream.prototype.SCRIPT_MODE;
 
 WAAStream.prototype._read = function (size) {
 	this._hungry = true;

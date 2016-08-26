@@ -278,25 +278,6 @@ WAAStream.prototype.push = function (chunk) {
 }
 
 
-let el = document.body.appendChild(document.createElement('div'));
-el.style.cssText = `
-font-family: wavefont;
-max-width: 100vw;
-word-break: break-all;
-white-space: pre-wrap;
-font-size: 32px;
-`;
-
-function draw (arr) {
-	let str = '';
-
-	for (let i = 0; i < arr.length; i++) {
-		str += String.fromCharCode(0x200 + Math.floor(arr[i] * 128 * 5));
-	}
-
-	el.innerHTML += '\n' + str;
-}
-
 
 /**
  * Shift planned chunk. If there is not enough data - release zeros
