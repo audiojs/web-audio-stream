@@ -106,7 +106,7 @@ Stream is smart enough to recognize any type of data placed into it: audioBuffer
 </details>
 <details><summary>**`let readable = Readable(audioNode?, options?)`**</summary>
 
-Create reading strean of web-audio-data, possibly with options, and maybe even with audioNode to read from.
+Create reading stream of web-audio-data, possibly with options, and maybe with audioNode to read from.
 
 ```js
 const Readable = require('web-audio-stream/readable');
