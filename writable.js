@@ -13,7 +13,7 @@ var extend = require('xtend/mutable');
 var pcm = require('pcm-util');
 var util = require('audio-buffer-utils');
 var isAudioBuffer = require('is-audio-buffer');
-
+var isPlainObject = require('is-plain-obj');
 
 module.exports = WAAStream;
 
@@ -21,17 +21,18 @@ module.exports = WAAStream;
 /**
  * @constructor
  */
-function WAAStream (options) {
-	if (!(this instanceof WAAStream)) return new WAAStream(options);
-
-
-	var connectTo;
-	if (options instanceof AudioNode) {
-		connectTo = options;
-		options = {
-			context: options.context
-		};
+function WAAStream (node, options) {
+	if (arguments.length === 1 && isPlainObject(node)) {
+		options = node;
+		node = null;
 	}
+
+	if (!options) {
+		options = {};
+		if (node && node.context) options.context = node.context;
+	}
+
+	if (!(this instanceof WAAStream)) return new WAAStream(node, options);
 
 	extend(this, options);
 
@@ -85,7 +86,7 @@ function WAAStream (options) {
 	}
 
 	//do connection if audio node was passed
-	if (connectTo) this.connect(connectTo);
+	if (node) this.connect(node);
 }
 
 

@@ -4,6 +4,8 @@ var WAAStream = require('./');
 var AudioBuffer = require('audio-buffer');
 var util = require('audio-buffer-utils');
 var Generator = require('audio-generator');
+var Speaker = require('audio-speaker');
+var assert = require('assert');
 
 
 test('Write chunk', function () {
@@ -117,18 +119,21 @@ test('Delayed connection/start');
 
 
 test('Readable stream', function () {
-	test('Options constructor', function () {
+	test('Options constructor', function (done) {
 		let oscNode = context.createOscillator();
 		oscNode.type = 'sawtooth';
 		oscNode.frequency.value = 440;
 		oscNode.start();
 
-		let count = 1;
-		let stream = WAAStream.Readable({
-
+		let count = 0;
+		let stream = WAAStream.Readable(oscNode).on('data', x => {
+			if (++count >= 5) stream.disconnect();
 		});
 
-		oscNode.connect();
+		setTimeout(() => {
+			assert.equal(count, 5);
+			done();
+		}, 200);
 	});
 });
 
