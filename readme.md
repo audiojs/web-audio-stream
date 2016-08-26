@@ -51,7 +51,7 @@ var Writable = require('web-audio-stream/writable');
 var context = require('audio-context');
 
 //options or single properties are optional
-var stream = Writable({
+var writable = Writable({
 	//audio context
 	context: context,
 	channels: 2,
@@ -79,9 +79,9 @@ stream.connect(context.destination);
 Dispose stream, end writing.
 
 </details>
-<details><summary>`audioStream.pipe(writable);`</summary>
+<details><summary>`stream.pipe(writable);`</summary>
 
-Connect stream to other stream, or write to it etc, basically it implements writable stream class.
+Pipe stream to writable, or write data directly to it etc, basically it implements _Writable_ stream class.
 
 ```js
 //as a stream
@@ -89,7 +89,7 @@ var Generator = require('audio-generator');
 var src = Generator(function (time) {
 	return Math.sin(Math.PI * 2 * time * 440);
 });
-src.pipe(stream);
+src.pipe(writable);
 
 
 //or simply send data to web-audio
@@ -97,9 +97,9 @@ var chunk = new Float32Array(1024);
 for (var i = 0; i < 1024; i++) {
 	chunk[i] = Math.random();
 }
-stream.write(chunk);
+writable.write(chunk);
 
-setTimeout(stream.end, 1000);
+setTimeout(writable.end, 1000);
 ```
 
 Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with passed options.
