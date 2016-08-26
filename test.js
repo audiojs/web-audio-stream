@@ -8,8 +8,8 @@ var Generator = require('audio-generator');
 
 test('Write chunk', function () {
 	test('AudioBuffer', function (done) {
-		var stream = WAAStream();
-		stream.connect(context.destination);
+		var stream = WAAStream(context.destination);
+		// stream.connect(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -23,8 +23,7 @@ test('Write chunk', function () {
 	});
 
 	test('Float32Array', function (done) {
-		var stream = WAAStream();
-		stream.connect(context.destination);
+		var stream = WAAStream(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -115,3 +114,30 @@ test('Chain of sound processing', function () {
 
 
 test('Delayed connection/start');
+
+
+test('Readable stream', function () {
+	test('Options constructor', function () {
+		let oscNode = context.createOscillator();
+		oscNode.type = 'sawtooth';
+		oscNode.frequency.value = 440;
+		oscNode.start();
+
+		let count = 1;
+		let stream = WAAStream.Readable({
+
+		});
+
+		oscNode.connect();
+	});
+});
+
+
+// test('Readable stream processing', function () {
+// 	let AppAudio = require('app-audio');
+// 	let appAudio = AppAudio({
+// 		source: 'sine',
+// 	}).on('ready', () => {
+
+// 	})
+// });

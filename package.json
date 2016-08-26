@@ -1,7 +1,7 @@
 {
   "name": "web-audio-stream",
   "version": "1.0.4",
-  "description": "Stream interface for Web Audio API",
+  "description": "Interface between Web Audio API and Streams",
   "main": "index.js",
   "scripts": {
     "test": "budo test.js",
