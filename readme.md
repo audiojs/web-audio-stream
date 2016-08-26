@@ -41,6 +41,7 @@ const Readable = require('web-audio-stream/readable');
 const Writable = require('web-audio-stream/writable');
 ```
 </details>
+
 <details><summary>`let writable = Writable(audioNode?, options?)`</summary>
 
 Create writer to web-audio, possibly based on options, and later connect it to audio node. Or maybe pass target audio node directly, maybe with options.
