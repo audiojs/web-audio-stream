@@ -1,18 +1,29 @@
 [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-Interface between Web Audio API and streams. Send any buffer PCM data to Web Audio API (writable mode) or connect any AudioNode to stream (readable mode).
+Interface between Web Audio API and streams. Send PCM data to Web Audio API (writable mode) or connect any AudioNode to stream (readable mode).
 
 ## Usage
 
 [![npm install web-audio-stream](https://nodei.co/npm/web-audio-stream.png?mini=true)](https://npmjs.org/package/web-audio-stream/)
 
 ```js
+const context = require('audio-context');
+const Generator = require('audio-generator');
 const {Readable, Writable} = require('web-audio-stream');
 
-//connect audio node to
-Readable(myNode).on('data', (chunk) => {
+let oscillator = context.createOscillator();
+oscillator.type = 'sawtooth';
+oscillator.frequency.value = 440;
+oscillator.start();
 
-})
+//pipe oscillator audio data to stream
+Readable(oscillator).on('data', (audioBuffer) => {
+	console.log(audioBuffer);
+});
+
+//pipe generator stream to audio destination
+Generator(time => Math.sin(Math.PI * 2 * time * 440))
+.pipe(Writable(context.destination));
 ```
 
 
