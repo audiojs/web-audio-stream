@@ -88,7 +88,7 @@ function WAAStream (node, options) {
 		this.initBufferMode();
 	}
 	else {
-		throw Error('Unknown mode. Please, write an issue to github.com/audio-lab/web-audio-stream if you have ideas for other modes.')
+		throw Error('Unknown mode. Please, write an issue to github.com/audiojs/web-audio-stream if you have ideas for other modes.')
 	}
 
 	//do connection if audio node was passed
