@@ -118,7 +118,7 @@ WAAStream.BUFFER_MODE = 0;
  * But buffer mode also tend to create noisy clicks. Not sure why, cannot remove that.
  * With script mode I at least defer my responsibility.
  */
-WAAStream.prototype.mode = WAAStream.BUFFER_MODE;
+WAAStream.prototype.mode = WAAStream.SCRIPT_MODE;
 
 
 /** Default audio context */
@@ -150,19 +150,13 @@ WAAStream.prototype.initScriptMode = function () {
 
 	self.node = self.context.createScriptProcessor(self.samplesPerFrame);
 	self.node.addEventListener('audioprocess', function (e) {
-		// util.copy(e.inputBuffer, e.outputBuffer);
+		//release causes synchronous pulling the pipeline
+		//so that we get a new data chunk
+		let cb = self._release;
+		self._release = null;
+		cb && cb();
 
-		//FIXME: if GC (I guess) is clicked, this guy may just stop generating event
-		//possibly there should be a promise-like thing, resetting scriptProcessor, or something... Like, reserving N scriptProcessors
-		//if it hangs - no more audioprocess events available
-		util.copy(self.shift(), e.outputBuffer);
-
-		//if there is a holding pressure control - release it
-		if (self._release) {
-			var release = self._release;
-			self._release = null;
-			release();
-		}
+		util.copy(self.shift(e.inputBuffer.length), e.outputBuffer);
 	});
 
 

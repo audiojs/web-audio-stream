@@ -15,7 +15,6 @@ test('Write chunk', function () {
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
-
 		stream.write(buf);
 
 		setTimeout(function () {
