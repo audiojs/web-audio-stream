@@ -1,6 +1,6 @@
 {
   "name": "web-audio-stream",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Interface between Web Audio API and Streams",
   "main": "index.js",
   "scripts": {
