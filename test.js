@@ -1,7 +1,7 @@
 var test = require('tst');
 var context = require('audio-context');
 var WAAStream = require('./stream');
-var Writer = require('./write.js');
+var Writer = require('./writer');
 var AudioBuffer = require('audio-buffer');
 var util = require('audio-buffer-utils');
 var Generator = require('audio-generator');
@@ -10,9 +10,11 @@ var Speaker = require('audio-speaker');
 var assert = require('assert');
 
 
-test.only('Plain function', function () {
+test('Plain function', function () {
 	let frame = 1024;
-	let write = Writer(context.destination, {samplesPerFrame: 1024});
+	let write = Writer(context.destination, {
+		samplesPerFrame: 1024
+	});
 	let generate = Generate(t => Math.sin(440 * t * Math.PI * 2));
 
 	let isStopped = 0;
@@ -62,8 +64,7 @@ test('Write chunk', function () {
 	});
 
 	test('Array', function (done) {
-		var stream = WAAStream();
-		stream.connect(context.destination);
+		var stream = WAAStream(context.destination);
 
 		var a = Array(1024).fill(0).map(function () {return Math.random()});
 
@@ -76,8 +77,7 @@ test('Write chunk', function () {
 	});
 
 	test('ArrayBuffer', function (done) {
-		var stream = WAAStream();
-		stream.connect(context.destination);
+		var stream = WAAStream(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -92,8 +92,7 @@ test('Write chunk', function () {
 
 
 	test('Buffer', function (done) {
-		var stream = WAAStream();
-		stream.connect(context.destination);
+		var stream = WAAStream(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -115,7 +114,7 @@ test('Stream chunk', function () {
 	Generator(function (time) {
 		return Math.sin(Math.PI * 2 * 440 * time);
 	}, {duration: 0.5})
-	.pipe(WAAStream()).connect(context.destination);
+	.pipe(WAAStream(context.destination));
 });
 
 
@@ -123,16 +122,14 @@ test('Chain of sound processing', function () {
 	var panner = context.createStereoPanner();
 	panner.pan.value = -1;
 
-	var stream = WAAStream({
-		autoend: true
-	});
+	var stream = WAAStream(panner);
 
 	Generator(function (time) {
 		return Math.sin(Math.PI * 2 * 80 * time);
 	}, {duration: 1})
 	.pipe(stream);
 
-	stream.connect(panner);
+	// stream.connect();
 
 	panner.connect(context.destination);
 });

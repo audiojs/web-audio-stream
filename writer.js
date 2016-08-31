@@ -1,7 +1,7 @@
 /**
- * @module  web-audio-stream/writable
+ * @module  web-audio-stream/write
  *
- * Write stream data to web-audio.
+ * Write data to web-audio.
  */
 'use strict';
 
@@ -14,15 +14,21 @@ const isAudioBuffer = require('is-audio-buffer');
 const isPlainObject = require('is-plain-obj');
 
 
-module.exports = WAAWrite;
+module.exports = WAAWriter;
+
+
+/**
+ * Rendering modes
+ */
+WAAWriter.WORKER_MODE = 2;
+WAAWriter.SCRIPT_MODE = 1;
+WAAWriter.BUFFER_MODE = 0;
 
 
 /**
  * @constructor
  */
-function WAAWrite (target, options) {
-	if (!(this instanceof WAAWrite)) return new WAAWrite(target, options);
-
+function WAAWriter (target, options) {
 	if (!target) throw Error('Pass AudioNode instance firts argument');
 
 	if (!options) {
@@ -41,7 +47,7 @@ function WAAWrite (target, options) {
 		 * But buffer mode also tend to create noisy clicks. Not sure why, cannot remove that.
 		 * With script mode I at least defer my responsibility.
 		 */
-		mode: WAAWrite.SCRIPT_MODE,
+		mode: WAAWriter.SCRIPT_MODE,
 		samplesPerFrame: pcm.defaults.samplesPerFrame,
 
 		//FIXME: take this from input node
@@ -57,13 +63,13 @@ function WAAWrite (target, options) {
 	let node, release, isStopped, isEmpty = false;
 
 	//queued data to send to output
-	let data = util.create(this.channels, this.samplesPerFrame);
+	let data = util.create(channels, samplesPerFrame);
 
 	//init proper mode
-	if (options.mode === WAAWrite.SCRIPT_MODE) {
+	if (options.mode === WAAWriter.SCRIPT_MODE) {
 		node = initScriptMode();
 	}
-	else if (options.mode === WAAWrite.BUFFER_MODE) {
+	else if (options.mode === WAAWriter.BUFFER_MODE) {
 		node = initBufferMode();
 	}
 	else {
@@ -221,108 +227,3 @@ function WAAWrite (target, options) {
 		}
 	}
 }
-
-
-/**
- * Rendering modes
- */
-WAAWrite.WORKER_MODE = 2;
-WAAWrite.SCRIPT_MODE = 1;
-WAAWrite.BUFFER_MODE = 0;
-
-
-
-
-/**
- * Writable interface
- */
-// WAAWrite.prototype._write = function (chunk, enc, cb) {
-// 	this.push(chunk);
-// 	this._release = cb;
-// };
-
-
-/**
- * Data control - plan a new chunk
- */
-// WAAWrite.prototype.push = function (chunk) {
-// 	if (!isAudioBuffer(chunk)) chunk = pcm.toAudioBuffer(chunk, this.format);
-
-// 	this.data = util.concat(this.data, chunk);
-
-// 	this.isEmpty = false;
-// }
-
-
-
-/**
- * Shift planned chunk. If there is not enough data - release zeros
- */
-// WAAWrite.prototype.shift = function (size) {
-// 	size = size || this.samplesPerFrame;
-
-// 	//if still empty - return existing buffer
-// 	if (this.isEmpty) return this.data;
-
-// 	var output = this.data;
-
-// 	if (this.data.length <= size) {
-// 		this.data = util.create(size);
-// 		this.isEmpty = true;
-// 	}
-// 	else {
-// 		output = util.slice(output, 0, size);
-
-// 		//shorten known data
-// 		this.data = util.slice(this.data, size);
-// 	}
-
-// 	//if size is too small, fill with silence
-// 	util.pad(output, size);
-
-// 	return output;
-// }
-
-
-
-/**
- * Overrides stream’s end to ensure event.
- */
-
-// WAAWrite.prototype.end = function () {
-// 	var self = this;
-
-// 	if (this.isEnded) return;
-
-// 	this.isEnded = true;
-
-// 	var triggered = false;
-// 	this.once('end', function () {
-// 		triggered = true;
-// 	});
-// 	Writable.prototype.end.call(this);
-
-// 	//timeout cb, because native end emits after a tick
-// 	var that = this;
-// 	setTimeout(function () {
-// 		if (!triggered) {
-// 			that.emit('end');
-// 		}
-// 	});
-
-// 	return self;
-// };
-
-
-
-/**
- * WAA connect interface
- */
-// WAAWrite.prototype.connect = function (target) {
-// 	this.node && this.node.connect(target);
-// 	return this;
-// };
-// WAAWrite.prototype.disconnect = function (target) {
-// 	this.node && this.node.disconnect(target);
-// 	return this;
-// };
