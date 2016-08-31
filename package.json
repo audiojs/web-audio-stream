@@ -6,7 +6,7 @@
   "scripts": {
     "preversion": "npm run lint",
     "lint": "eslint *.js --ignore-pattern test*",
-    "test": "budo test.js",
+    "test": "echo \"no tests for node yet\"",
     "test:browser": "budo test.js"
   },
   "repository": {
