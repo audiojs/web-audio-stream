@@ -36,18 +36,18 @@ function WAAStream (node, options) {
 
 
 	//manage input pipes number
-	let inputsCount = 0;
 	let that = this;
-	this.on('pipe', function (source) {
-		inputsCount++;
+	this.inputsCount = 0;
+	this.on('pipe', (source) => {
+		this.inputsCount++;
 
 		//do autoend
 		source.once('end', function () {
 			that.end();
 		});
 
-	}).on('unpipe', function (source) {
-		inputsCount--;
+	}).on('unpipe', (source) => {
+		this.inputsCount--;
 	});
 }
 
@@ -84,8 +84,6 @@ WAAStream.prototype.inputsCount = 0;
  */
 //FIXME: not sure why `end` is triggered here like 10 times.
 WAAStream.prototype.end = function () {
-	var self = this;
-
 	if (this.isEnded) return;
 
 	this.isEnded = true;

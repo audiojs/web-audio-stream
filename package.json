@@ -4,6 +4,8 @@
   "description": "Interface between Web Audio API and Streams",
   "main": "./stream.js",
   "scripts": {
+    "preversion": "npm run lint",
+    "lint": "eslint *.js --ignore-pattern test*",
     "test": "budo test.js",
     "test:browser": "budo test.js"
   },

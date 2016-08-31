@@ -6,12 +6,10 @@
 'use strict';
 
 
-const inherits = require('inherits');
 const extend = require('xtend/mutable');
 const pcm = require('pcm-util');
 const util = require('audio-buffer-utils');
 const isAudioBuffer = require('is-audio-buffer');
-const isPlainObject = require('is-plain-obj');
 
 
 module.exports = WAAWriter;
@@ -137,7 +135,6 @@ function WAAWriter (target, options) {
 		let bufferNode = context.createBufferSource();
 		bufferNode.loop = true;
 		bufferNode.buffer = util.create(channels, samplesPerFrame);
-		let buffer = bufferNode.buffer;
 
 		node = context.createScriptProcessor(samplesPerFrame);
 		node.addEventListener('audioprocess', function (e) {
@@ -157,7 +154,7 @@ function WAAWriter (target, options) {
 		bufferNode.start();
 
 		return node;
-	};
+	}
 
 
 	/**
@@ -178,7 +175,7 @@ function WAAWriter (target, options) {
 
 		//audio buffer realtime ticked cycle
 		//FIXME: find a way to receive target starving callback here instead of unguaranteed timeouts
-		let tickTimeout = setTimeout(tick);
+		setTimeout(tick);
 
 		node.start();
 
@@ -222,7 +219,7 @@ function WAAWriter (target, options) {
 				//time of starving is when played time reaches (last count time) - half-duration
 				let starvingTime = (lastCount - samplesPerFrame) / sampleRate;
 				let remainingTime = starvingTime - playedTime;
-				tickTimeout = setTimeout(tick, remainingTime * 1000);
+				setTimeout(tick, remainingTime * 1000);
 			}
 		}
 	}
