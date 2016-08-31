@@ -1,11 +1,35 @@
 var test = require('tst');
 var context = require('audio-context');
-var WAAStream = require('./');
+var WAAStream = require('./stream');
+var Writer = require('./write.js');
 var AudioBuffer = require('audio-buffer');
 var util = require('audio-buffer-utils');
 var Generator = require('audio-generator');
+var Generate = require('audio-generator/index.js')
 var Speaker = require('audio-speaker');
 var assert = require('assert');
+
+
+test.only('Plain function', function () {
+	let frame = 1024;
+	let write = Writer(context.destination, {samplesPerFrame: 1024});
+	let generate = Generate(t => Math.sin(440 * t * Math.PI * 2));
+
+	let isStopped = 0;
+	setTimeout(() => {
+		isStopped = 1;
+	}, 500);
+	function gen (err) {
+		if (err) throw err;
+		if (isStopped) {
+			write(null);
+			return;
+		}
+		let buf = generate(util.create(frame));
+		write(buf, gen);
+	}
+	gen();
+});
 
 
 test('Write chunk', function () {

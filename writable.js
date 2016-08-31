@@ -14,6 +14,7 @@ var pcm = require('pcm-util');
 var util = require('audio-buffer-utils');
 var isAudioBuffer = require('is-audio-buffer');
 var isPlainObject = require('is-plain-obj');
+var Writer = require('./index');
 
 module.exports = WAAStream;
 

@@ -42,9 +42,9 @@ const Writable = require('web-audio-stream/writable');
 ```
 </details>
 
-<details><summary>**`let writable = Writable(audioNode?, options?)`**</summary>
+<details><summary>**`let writable = Writable(audioNode, options?)`**</summary>
 
-Create writer to web-audio, possibly based on options, and later connect it to audio node. Or maybe pass target audio node directly, maybe with options.
+Create writer to web audio node, possibly based on options.
 
 ```js
 var Writable = require('web-audio-stream/writable');
@@ -54,7 +54,7 @@ var context = require('audio-context');
 var writable = Writable(context.destination, {
 	//context: context,
 	//channels: 2,
-	//sampleRate: 44100,
+	//sampleRate: context.sampleRate,
 
 	//BUFFER_MODE, SCRIPT_MODE, WORKER_MODE (pending web-audio-workers)
 	mode: Writable.BUFFER_MODE,
@@ -63,20 +63,6 @@ var writable = Writable(context.destination, {
 	autoend: true
 });
 ```
-</details>
-<details><summary>**`writable.connect(audioNode);`**</summary>
-
-Connect stream to audio node.
-
-```js
-//connect/disconnect to AudioNode
-writable.connect(context.destination);
-```
-</details>
-<details><summary>**`writable.disconnect();`**</summary>
-
-Disconnect from target audionode, end writing, dispose stream.
-
 </details>
 <details><summary>**`stream.pipe(writable);`**</summary>
 
