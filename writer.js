@@ -56,7 +56,9 @@ function WAAWriter (target, options) {
 	let format = pcm.format(options);
 	pcm.normalize(format);
 
-	let {context, channels, samplesPerFrame} = options;
+	let context = options.context;
+	let channels = options.channels;
+	let samplesPerFrame = options.samplesPerFrame;
 	let sampleRate = context.sampleRate;
 	let node, release, isStopped, isEmpty = false;
 
