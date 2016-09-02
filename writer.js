@@ -27,13 +27,13 @@ WAAWriter.BUFFER_MODE = 0;
  * @constructor
  */
 function WAAWriter (target, options) {
-	if (!target) throw Error('Pass AudioNode instance firts argument');
+	if (!target || !target.context) throw Error('Pass AudioNode instance first argument');
 
 	if (!options) {
 		options = {};
 	}
 
-	if (target && target.context) options.context = target.context;
+	options.context = target.context;
 
 	options = extend({
 		/**
