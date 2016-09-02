@@ -80,6 +80,7 @@ function WAAWriter (target, options) {
 	node.connect(target);
 
 	write.end = () => {
+		if (isStopped) return;
 		node.disconnect();
 		isStopped = true;
 	}
@@ -88,8 +89,10 @@ function WAAWriter (target, options) {
 
 	//return writer function
 	function write (buffer, cb) {
+		if (isStopped) return;
+
 		if (buffer == null) {
-			write.end();
+			return write.end();
 		}
 		else {
 			push(buffer);
