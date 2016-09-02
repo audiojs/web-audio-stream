@@ -11,7 +11,7 @@ var Speaker = require('audio-speaker');
 var assert = require('assert');
 
 
-test.only('Plain function', function () {
+test('Plain function', function () {
 	test('Writer', function () {
 		let frame = 1024;
 		let write = Writer(context.destination, {
@@ -139,7 +139,7 @@ test('Write chunk', function () {
 });
 
 
-test('Stream', function () {
+test('Writable stream', function () {
 	test('Regular stream', function () {
 		Generator(function (time) {
 			return Math.sin(Math.PI * 2 * 440 * time);
@@ -164,26 +164,26 @@ test('Stream', function () {
 	});
 
 	test('Delayed connection/start');
-
-	test('Options constructor', function (done) {
-		let oscNode = context.createOscillator();
-		oscNode.type = 'sawtooth';
-		oscNode.frequency.value = 440;
-		oscNode.start();
-
-		let count = 0;
-		let stream = WAAStream.Readable(oscNode).on('data', x => {
-			assert.notEqual(x.getChannelData(0)[0], 0);
-			if (++count >= 5) stream.disconnect();
-		});
-
-		setTimeout(() => {
-			assert.equal(count, 5);
-			done();
-		}, 200);
-	});
 });
 
+
+test('Readable', function (done) {
+	let oscNode = context.createOscillator();
+	oscNode.type = 'sawtooth';
+	oscNode.frequency.value = 440;
+	oscNode.start();
+
+	let count = 0;
+	let stream = WAAStream.Readable(oscNode).on('data', x => {
+		assert.notEqual(x.getChannelData(0)[1], 0);
+		if (++count >= 5) stream.end();
+	});
+
+	setTimeout(() => {
+		assert.equal(count, 5);
+		done();
+	}, 200);
+});
 
 
 // test('Readable stream processing', function () {

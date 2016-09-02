@@ -10,14 +10,14 @@ var inherits = require('inherits');
 var Writable = require('stream').Writable;
 var createWriter = require('./writer');
 
-module.exports = WAAStream;
+module.exports = WAAWritable;
 
 
 /**
  * @constructor
  */
-function WAAStream (node, options) {
-	if (!(this instanceof WAAStream)) return new WAAStream(node, options);
+function WAAWritable (node, options) {
+	if (!(this instanceof WAAWritable)) return new WAAWritable(node, options);
 
 	let write = createWriter(node, options);
 
@@ -52,15 +52,15 @@ function WAAStream (node, options) {
 }
 
 
-inherits(WAAStream, Writable);
+inherits(WAAWritable, Writable);
 
 
 /**
  * Rendering modes
  */
-WAAStream.WORKER_MODE = 2;
-WAAStream.SCRIPT_MODE = 1;
-WAAStream.BUFFER_MODE = 0;
+WAAWritable.WORKER_MODE = 2;
+WAAWritable.SCRIPT_MODE = 1;
+WAAWritable.BUFFER_MODE = 0;
 
 
 /**
@@ -72,18 +72,18 @@ WAAStream.BUFFER_MODE = 0;
  * But buffer mode also tend to create noisy clicks. Not sure why, cannot remove that.
  * With script mode I at least defer my responsibility.
  */
-WAAStream.prototype.mode = WAAStream.SCRIPT_MODE;
+WAAWritable.prototype.mode = WAAWritable.SCRIPT_MODE;
 
 
 /** Count of inputs */
-WAAStream.prototype.inputsCount = 0;
+WAAWritable.prototype.inputsCount = 0;
 
 
 /**
  * Overrides stream’s end to ensure event.
  */
 //FIXME: not sure why `end` is triggered here like 10 times.
-WAAStream.prototype.end = function () {
+WAAWritable.prototype.end = function () {
 	if (this.isEnded) return;
 
 	this.isEnded = true;
