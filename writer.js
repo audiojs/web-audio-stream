@@ -79,11 +79,17 @@ function WAAWriter (target, options) {
 	//connect node
 	node.connect(target);
 
+	write.end = () => {
+		node.disconnect();
+		isStopped = true;
+	}
+
+	return write;
+
 	//return writer function
-	return function write (buffer, cb) {
+	function write (buffer, cb) {
 		if (buffer == null) {
-			node.disconnect();
-			isStopped = true;
+			write.end();
 		}
 		else {
 			push(buffer);
