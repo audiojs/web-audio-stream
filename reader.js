@@ -45,13 +45,16 @@ function WAAReader (sourceNode, options) {
 	sourceNode.connect(node);
 	node.connect(context.destination);
 
+	read.end = function () {
+		node.disconnect();
+		release = null;
+	}
 
-	return function read (cb) {
-		//end source
-		if (cb === null) {
-			node.disconnect();
-			return;
-		}
+	return read;
+
+	function read (cb) {
+		if (cb === null) return read.end();
+
 		release = cb;
 	}
 

@@ -31,18 +31,18 @@ function WAAReadable (node, options) {
 		highWaterMark: 0,
 
 		read: function (size) {
-			if (size === null) return read(null);
+			if (size === null) read.end();
 
 			read((err, buffer) => {
 				if (!err) this.push(buffer);
 			});
 		}
 	});
-}
 
-//FIXME: arguable solution, but `stream.push(null)` will not disconnect node
-WAAReadable.prototype.end = function end () {
-	this._read(null);
+	this.end = function () {
+		read.end();
+		return this;
+	}
 }
 
 // WAAReadable.WORKER_MODE = 2;
