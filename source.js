@@ -5,10 +5,6 @@
  */
 'use strict';
 
-
-var pull = require('pull-stream/pull');
-var asyncMap = require('pull-stream/throughs/async-map');
-var infinite = require('pull-stream/sources/infinite');
 var createReader = require('./reader');
 
 module.exports = source;
@@ -17,13 +13,14 @@ module.exports = source;
 function source (node, options) {
 	let read = createReader(node, options);
 
-	//FIXME: too clumsy. I’d expect pull.asyncSource(read)
-	let stream = pull(
-		infinite(() => {}),
-		asyncMap((_, cb) => {
-			read(cb);
-		})
-	);
+	let stream = function (end, cb) {
+		if (end) {
+			read.end();
+			return cb && cb(end)
+		}
+
+		return read(cb);
+	}
 
 	stream.abort = read.end;
 
