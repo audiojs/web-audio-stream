@@ -91,36 +91,18 @@ Stream is smart enough to recognize any type of data placed into it: audioBuffer
 
 </details>
 
-<details><summary>**`let readable = Readable(audioNode?, options?)`**</summary>
+<details><summary>**`let readable = Readable(audioNode, options?)`**</summary>
 
-Create reading stream of web-audio-data, possibly with options, and maybe with audioNode to read from.
+Create readable stream of web-audio data from _audioNode_, possibly with options.
 
 ```js
 const Readable = require('web-audio-stream/readable');
 
-let readable = Readable(myNode, {
-	//audio context, if node is not passed
-	context: context,
-	channels: 2,
-	sampleRate: 44100,
-
-	//ANALYZER_NODE or SCRIPT_NODE
-	mode: Readable.SCRIPT_MODE
-});
+let readable = Readable(myNode);
 readable.on('data', buffer => {
 	console.log('Got audio buffer');
 });
 ```
-
-</details>
-<details><summary>**`readable.connect(node)`**</summary>
-
-Read from audio node. Note that it is reversing order - basically node gets connected to readable stream.
-
-</details>
-<details><summary>**`readable.disconnect()`**</summary>
-
-End reading.
 
 </details>
 
