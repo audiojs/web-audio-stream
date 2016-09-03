@@ -8,93 +8,45 @@
 
 
 const inherits = require('inherits');
-const context = require('audio-context');
-const extend = require('xtend/mutable');
 const Readable = require('stream').Readable;
-const pcm = require('pcm-util');
-const isPlainObject = require('is-plain-obj');
+const createReader = require('./reader');
 
-module.exports = WAAStream;
+module.exports = WAAReadable;
 
 
-inherits(WAAStream, Readable);
+inherits(WAAReadable, Readable);
 
 
 //@constructor
-function WAAStream (node, options) {
-	if (arguments.length === 1 && isPlainObject(node)) {
-		options = node;
-		node = null;
-	}
+function WAAReadable (node, options) {
+	if (!(this instanceof WAAReadable)) return new WAAReadable(node, options);
 
-	if (!options) {
-		options = {};
-		if (node && node.context) options.context = node.context;
-	}
-
-	if (!(this instanceof WAAStream)) return new WAAStream(node, options);
-
-	extend(this, options);
-
-	//ignore no context
-	if (!this.context || !this.context.sampleRate) {
-		console.warn('No proper audio context passed');
-		return;
-	}
-
-	this.sampleRate = this.context.sampleRate;
+	let read = createReader(node, options);
 
 	Readable.call(this, {
-		//we need object mode to recognize any type of input
 		objectMode: true,
 
 		//to keep processing delays very short, in case of RT binding.
 		//otherwise each stream will hoard data and release only when it’s full.
-		highWaterMark: 0
+		highWaterMark: 0,
+
+		read: function (size) {
+			if (size === null) read.end();
+
+			read((err, buffer) => {
+				if (!err) this.push(buffer);
+			});
+		}
 	});
 
-	//TODO: gate by SCRIPT_MODE
-	this.node = this.context.createScriptProcessor(this.samplesPerFrame, this.channels, this.channels);
-
-	this.node.addEventListener('audioprocess', e => {
-		//send to stream
-		this.push(e.inputBuffer);
-
-		//FIXME: should we sink web-audio instantly? Mb just fade it, avoid processor wasting?
-		//seems that fading is the proper option
-		// util.copy(e.inputBuffer, e.outputBuffer);
-	});
-
-	//scriptProcessor is active only being connected to output
-	this.node.connect(this.context.destination);
-
-	if (node) {
-		this.connect(node);
+	this.end = function () {
+		read.end();
+		return this;
 	}
 }
 
-extend(WAAStream.prototype, pcm.defaults);
+// WAAReadable.WORKER_MODE = 2;
+// WAAReadable.ANALYZER_MODE = 0;
+WAAReadable.SCRIPT_MODE = 1;
 
-WAAStream.WORKER_MODE = 2;
-WAAStream.ANALYZER_MODE = 0;
-WAAStream.SCRIPT_MODE = 1;
-
-WAAStream.prototype.mode = WAAStream.prototype.SCRIPT_MODE;
-
-
-/** Default audio context */
-WAAStream.prototype.context = context;
-
-
-WAAStream.prototype._read = function (size) {
-	this._hungry = true;
-};
-
-
-WAAStream.prototype.disconnect = function () {
-	this.node.disconnect();
-}
-
-WAAStream.prototype.connect = function (node) {
-	node.connect(this.node);
-}
+WAAReadable.prototype.mode = WAAReadable.prototype.SCRIPT_MODE;

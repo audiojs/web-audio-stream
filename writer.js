@@ -27,13 +27,13 @@ WAAWriter.BUFFER_MODE = 0;
  * @constructor
  */
 function WAAWriter (target, options) {
-	if (!target) throw Error('Pass AudioNode instance firts argument');
+	if (!target || !target.context) throw Error('Pass AudioNode instance first argument');
 
 	if (!options) {
 		options = {};
 	}
 
-	if (target && target.context) options.context = target.context;
+	options.context = target.context;
 
 	options = extend({
 		/**
@@ -79,11 +79,20 @@ function WAAWriter (target, options) {
 	//connect node
 	node.connect(target);
 
+	write.end = () => {
+		if (isStopped) return;
+		node.disconnect();
+		isStopped = true;
+	}
+
+	return write;
+
 	//return writer function
-	return function write (buffer, cb) {
+	function write (buffer, cb) {
+		if (isStopped) return;
+
 		if (buffer == null) {
-			node.disconnect();
-			isStopped = true;
+			return write.end();
 		}
 		else {
 			push(buffer);
