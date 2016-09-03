@@ -9,6 +9,8 @@ var Generator = require('audio-generator');
 var Generate = require('audio-generator/index.js')
 var Speaker = require('audio-speaker');
 var assert = require('assert');
+var WAASink = require('./pull');
+var pull = require('pull-stream');
 
 
 test('Plain function', function () {
@@ -167,7 +169,7 @@ test('Writable stream', function () {
 });
 
 
-test('Readable', function (done) {
+test('Readable stream', function (done) {
 	let oscNode = context.createOscillator();
 	oscNode.type = 'sawtooth';
 	oscNode.frequency.value = 440;
@@ -183,6 +185,17 @@ test('Readable', function (done) {
 		assert.equal(count, 5);
 		done();
 	}, 200);
+});
+
+
+test('Pull stream', function () {
+	let generate = Generate(Math.random);
+
+	pull(
+		pull.infinite(generate),
+		pull.take(10),
+		WAASink(context.destination)
+	);
 });
 
 
