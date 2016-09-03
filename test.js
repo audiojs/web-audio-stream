@@ -188,14 +188,26 @@ test('Readable stream', function (done) {
 });
 
 
-test('Pull stream', function () {
+test('Pull stream sink', function (done) {
 	let generate = Generate(Math.random);
+	let source = pull.infinite(generate);
+	let sink = WAASink(context.destination);
 
 	pull(
-		pull.infinite(generate),
-		pull.take(10),
-		WAASink(context.destination)
+		source,
+		// pull.take(10),
+		sink
 	);
+
+	setTimeout(() => {
+		sink.abort();
+		//FIXME: how to end stream externally?
+		// sink.abort();
+		done();
+	}, 100);
+});
+
+test('Pull stream source', function (done) {
 });
 
 

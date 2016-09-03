@@ -20,8 +20,12 @@ module.exports = WAAStream;
 function WAAStream (node, options) {
 	let write = createWriter(node, options);
 
-	return pull(
+	let stream = pull(
 		asyncMap(write),
 		drain()
 	);
+
+	stream.abort = write.end;
+
+	return stream;
 }
