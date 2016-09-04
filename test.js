@@ -203,8 +203,6 @@ test('Pull stream sink', function (done) {
 
 	setTimeout(() => {
 		sink.abort();
-		//FIXME: how to end stream externally?
-		// sink.abort();
 		done();
 	}, 200);
 });

@@ -16,13 +16,14 @@ module.exports = sink;
 
 function sink (node, options) {
 	let write = createWriter(node, options);
+	let d = drain();
 
-	let stream = pull(
-		asyncMap(write),
-		drain()
-	);
+	let stream = pull(asyncMap(write), d);
 
-	stream.abort = write.end;
+	stream.abort = () => {
+		write.end();
+		d.abort();
+	};
 
 	return stream;
 }

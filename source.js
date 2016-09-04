@@ -12,17 +12,25 @@ module.exports = source;
 
 function source (node, options) {
 	let read = createReader(node, options);
+	let ended = false;
 
 	let stream = function (end, cb) {
-		if (end) {
-			read.end();
-			return cb && cb(end)
+		if (end || ended) {
+			if (!ended) {
+				read.end();
+			}
+
+			ended = true;
+			return cb && cb(true)
 		}
 
 		return read(cb);
 	}
 
-	stream.abort = read.end;
+	stream.abort = () => {
+		ended = true;
+		read.end();
+	}
 
 	return stream;
 }
