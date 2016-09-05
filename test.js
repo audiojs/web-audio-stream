@@ -1,6 +1,7 @@
 var test = require('tst');
 var context = require('audio-context');
-var WAAStream = require('./stream');
+var Writable = require('./writable');
+var Readable = require('./readable');
 var Writer = require('./writer');
 var Reader = require('./reader');
 var AudioBuffer = require('audio-buffer');
@@ -9,6 +10,9 @@ var Generator = require('audio-generator');
 var Generate = require('audio-generator/index.js')
 var Speaker = require('audio-speaker');
 var assert = require('assert');
+var Sink = require('./sink');
+var Source = require('./source');
+var pull = require('pull-stream');
 
 
 test('Plain function', function () {
@@ -65,7 +69,7 @@ test('Plain function', function () {
 
 test('Write chunk', function () {
 	test('AudioBuffer', function (done) {
-		var stream = WAAStream(context.destination);
+		var stream = Writable(context.destination);
 		// stream.connect(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
@@ -79,7 +83,7 @@ test('Write chunk', function () {
 	});
 
 	test('Float32Array', function (done) {
-		var stream = WAAStream(context.destination);
+		var stream = Writable(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -93,7 +97,7 @@ test('Write chunk', function () {
 	});
 
 	test('Array', function (done) {
-		var stream = WAAStream(context.destination);
+		var stream = Writable(context.destination);
 
 		var a = Array(1024).fill(0).map(function () {return Math.random()});
 
@@ -106,7 +110,7 @@ test('Write chunk', function () {
 	});
 
 	test('ArrayBuffer', function (done) {
-		var stream = WAAStream(context.destination);
+		var stream = Writable(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -121,7 +125,7 @@ test('Write chunk', function () {
 
 
 	test('Buffer', function (done) {
-		var stream = WAAStream(context.destination);
+		var stream = Writable(context.destination);
 
 		var buf = new AudioBuffer(1024*8);
 		util.noise(buf);
@@ -144,14 +148,14 @@ test('Writable stream', function () {
 		Generator(function (time) {
 			return Math.sin(Math.PI * 2 * 440 * time);
 		}, {duration: 0.5})
-		.pipe(WAAStream(context.destination));
+		.pipe(Writable(context.destination));
 	});
 
 	test('Chain of sound processing', function () {
 		var panner = context.createStereoPanner();
 		panner.pan.value = -1;
 
-		var stream = WAAStream(panner);
+		var stream = Writable(panner);
 
 		Generator(function (time) {
 			return Math.sin(Math.PI * 2 * 80 * time);
@@ -167,17 +171,60 @@ test('Writable stream', function () {
 });
 
 
-test('Readable', function (done) {
+test('Readable stream', function (done) {
 	let oscNode = context.createOscillator();
 	oscNode.type = 'sawtooth';
 	oscNode.frequency.value = 440;
 	oscNode.start();
 
 	let count = 0;
-	let stream = WAAStream.Readable(oscNode).on('data', x => {
+	let stream = Readable(oscNode).on('data', x => {
 		assert.notEqual(x.getChannelData(0)[1], 0);
 		if (++count >= 5) stream.end();
 	});
+
+	setTimeout(() => {
+		assert.equal(count, 5);
+		done();
+	}, 200);
+});
+
+
+test('Pull stream sink', function (done) {
+	let generate = Generate(Math.random);
+	let source = pull.infinite(generate);
+	let sink = Sink(context.destination);
+
+	pull(
+		source,
+		// pull.take(10),
+		sink
+	);
+
+	setTimeout(() => {
+		sink.abort();
+		done();
+	}, 200);
+});
+
+test('Pull stream source', function (done) {
+	let oscNode = context.createOscillator();
+	oscNode.type = 'sawtooth';
+	oscNode.frequency.value = 440;
+	oscNode.start();
+
+	let count = 0;
+	let stream = Source(oscNode);
+
+	pull(
+		stream,
+		pull.map(buf => {
+			assert.notEqual(buf.getChannelData(0)[1], 0);
+			if (++count >= 5) stream.abort();
+			return buf;
+		}),
+		pull.drain()
+	);
 
 	setTimeout(() => {
 		assert.equal(count, 5);
