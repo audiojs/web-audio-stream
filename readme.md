@@ -4,6 +4,8 @@ Interface between Web Audio API and streams. Send PCM data to Web Audio API (wri
 
 ## Usage
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/audiojs/web-audio-stream.svg)](https://greenkeeper.io/)
+
 [![npm install web-audio-stream](https://nodei.co/npm/web-audio-stream.png?mini=true)](https://npmjs.org/package/web-audio-stream/)
 
 ```js
