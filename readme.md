@@ -28,24 +28,24 @@ Generator(time => Math.sin(Math.PI * 2 * time * 440))
 
 ## API
 
-Most methods share same optional `options` parameter with the following:
-
-* `mode` − 0 or 1, defines buffer or script mode of feeding data, may affect performance insignificantly.
-* `context` − audio context, defaults to [audio-context](https://npmjs.org/package/audio-context) module.
-* `samplesPerFrame` and `channels` define audio buffer params.
-
 ### `const {Read, Write} = require('web-audio-stream')`
 
 Get Web-Audio-API reader or writer constructors. They can be required separately:
 
 ```js
-const Readable = require('web-audio-stream/read')
-const Writable = require('web-audio-stream/write')
+const createReader = require('web-audio-stream/read')
+const createWriter = require('web-audio-stream/write')
 ```
 
 ### `let write = Write(destNode, options?)`
 
 Create function writing to web-audio-API AudioNode with the following signature: `write(audioBuffer, (err) => {})`. To end stream properly, call `write(null)`.
+
+`options` parameter is optional and may provide the following:
+
+* `mode` − 0 or 1, defines buffer or script mode of feeding data, may affect performance insignificantly.
+* `context` − audio context, defaults to [audio-context](https://npmjs.org/package/audio-context) module.
+* `samplesPerFrame` and `channels` define audio buffer params.
 
 ```js
 const Writer = require('web-audio-stream/write')
@@ -77,6 +77,8 @@ function gen (err) {
 }
 gen()
 ```
+
+Writer is smart enough to recognize any type of data placed into it: [AudioBuffer](https://github.com/audiojs/audio-buffer), [AudioBufferList](https://github.com/audiojs/audio-buffer-list), ArrayBuffer, FloatArray, Buffer, Array. Make sure only that passed buffer format complies with passed options, ie. `samplerPerFrame`, `channels` etc.
 
 ### `let read = Read(sourceNode, options?)`
 
@@ -111,7 +113,7 @@ read(function getData(err, audioBuffer) {
 
 ### `const {Readable, Writable} = require('web-audio-stream/stream')`
 
-Get readable or writable stream. Pipe in/out to send/receive audio data from Web-Audio-API.
+Get readable or writable stream to pipe data from stream to web-audio directly.
 
 ```js
 //web-audio → stream
@@ -160,9 +162,6 @@ writable.write(chunk)
 setTimeout(writable.end, 1000)
 ```
 
-Stream is smart enough to recognize any type of data placed into it: [AudioBuffer](https://github.com/audiojs/audio-buffer), [AudioBufferList](https://github.com/audiojs/audio-buffer-list), ArrayBuffer, FloatArray, Buffer, Array. Make sure only that passed buffer format complies with passed options, ie. `samplerPerFrame`, `channels` etc.
-
-
 ### `let readable = Readable(audioNode, options?)`
 
 Readable stream to read data from web-audio-API.
@@ -177,6 +176,20 @@ readable.on('data', buffer => {
 ```
 
 ## Pull-stream API
+
+Pull-stream classes internally use plain reader and writer and can be used in the same fashion.
+
+### `const {sink, source} = require('web-audio-stream/pull')`
+
+```js
+const Sink = require('web-audio-stream/sink')
+const Source = require('web-audio-stream/source')
+```
+
+### `let sink = Sink(destNode, options?)`
+
+### `let source = Source(srcNode, options?)`
+
 
 ## Related
 
