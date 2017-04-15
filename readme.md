@@ -31,7 +31,7 @@ Generator(time => Math.sin(Math.PI * 2 * time * 440))
 
 ## API
 
-<details><summary>**`const {Readable, Writable} = require('web-audio-stream');`**</summary>
+### `const {Readable, Writable} = require('web-audio-stream');`
 
 Require stream instance, by default writable. Or require separate streams:
 
@@ -42,9 +42,8 @@ const Readable = require('web-audio-stream/readable');
 //stream → web-audio
 const Writable = require('web-audio-stream/writable');
 ```
-</details>
 
-<details><summary>**`let writable = Writable(audioNode, options?)`**</summary>
+### `let writable = Writable(audioNode, options?)`
 
 Create writer to web audio node, possibly based on options.
 
@@ -65,8 +64,8 @@ var writable = Writable(context.destination, {
 	autoend: true
 });
 ```
-</details>
-<details><summary>**`stream.pipe(writable);`**</summary>
+
+### `stream.pipe(writable);`
 
 Pipe stream to writable, or write data directly to it etc, basically it implements _Writable_ stream class.
 
@@ -91,9 +90,9 @@ setTimeout(writable.end, 1000);
 
 Stream is smart enough to recognize any type of data placed into it: audioBuffer, arrayBuffer, float32Array, buffer, array. Make sure only that passed buffer format complies with passed options.
 
-</details>
 
-<details><summary>**`let readable = Readable(audioNode, options?)`**</summary>
+
+### `let readable = Readable(audioNode, options?)`
 
 Create readable stream of web-audio data from _audioNode_, possibly with options.
 
@@ -106,7 +105,7 @@ readable.on('data', buffer => {
 });
 ```
 
-</details>
+
 
 ## In the wild
 
