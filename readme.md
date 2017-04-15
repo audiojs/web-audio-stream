@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/audiojs/web-audio-stream.svg?branch=master)](https://travis-ci.org/audiojs/web-audio-stream) [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges) [![Greenkeeper badge](https://badges.greenkeeper.io/audiojs/web-audio-stream.svg)](https://greenkeeper.io/)
+[![Build Status](https://travis-ci.org/audiojs/web-audio-stream.svg?branch=master)](https://travis-ci.org/audiojs/web-audio-stream) [![Greenkeeper badge](https://badges.greenkeeper.io/audiojs/web-audio-stream.svg)](https://greenkeeper.io/) [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
 Interface between Web Audio API and streams. Send PCM data to Web Audio API (writable mode) or connect any AudioNode to stream (readable mode).
 
