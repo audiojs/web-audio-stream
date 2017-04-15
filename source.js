@@ -5,7 +5,7 @@
  */
 'use strict';
 
-var createReader = require('./reader');
+var createReader = require('./read');
 
 module.exports = source;
 

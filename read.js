@@ -6,7 +6,7 @@
 
 'use strict';
 
-const extend = require('xtend/mutable');
+const extend = require('object-assign');
 
 module.exports = WAAReader;
 

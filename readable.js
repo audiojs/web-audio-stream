@@ -9,7 +9,7 @@
 
 const inherits = require('inherits');
 const Readable = require('stream').Readable;
-const createReader = require('./reader');
+const createReader = require('./read');
 
 module.exports = WAAReadable;
 

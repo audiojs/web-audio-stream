@@ -9,7 +9,7 @@
 var pull = require('pull-stream/pull');
 var asyncMap = require('pull-stream/throughs/async-map');
 var drain = require('pull-stream/sinks/drain');
-var createWriter = require('./writer');
+var createWriter = require('./write');
 
 module.exports = sink;
 

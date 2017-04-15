@@ -6,11 +6,11 @@
 'use strict';
 
 
-const extend = require('xtend/mutable');
-const pcm = require('pcm-util');
-const util = require('audio-buffer-utils');
-const isAudioBuffer = require('is-audio-buffer');
-
+const extend = require('object-assign')
+const pcm = require('pcm-util')
+const util = require('audio-buffer-utils')
+const isAudioBuffer = require('is-audio-buffer')
+const AudioBufferList = require('audio-buffer-list')
 
 module.exports = WAAWriter;
 
@@ -27,7 +27,7 @@ WAAWriter.BUFFER_MODE = 0;
  * @constructor
  */
 function WAAWriter (target, options) {
-	if (!target || !target.context) throw Error('Pass AudioNode instance first argument');
+	if (!target || !target.context) throw Error('Pass AudioNode instance first argument')
 
 	if (!options) {
 		options = {};
@@ -50,11 +50,11 @@ function WAAWriter (target, options) {
 
 		//FIXME: take this from input node
 		channels: pcm.defaults.channels
-	}, options);
+	}, options)
 
 	//ensure input format
-	let format = pcm.format(options);
-	pcm.normalize(format);
+	let format = pcm.format(options)
+	pcm.normalize(format)
 
 	let context = options.context;
 	let channels = options.channels;
@@ -63,25 +63,25 @@ function WAAWriter (target, options) {
 	let node, release, isStopped, isEmpty = false;
 
 	//queued data to send to output
-	let data = util.create(channels, samplesPerFrame);
+	let data = new AudioBufferList()
 
 	//init proper mode
 	if (options.mode === WAAWriter.SCRIPT_MODE) {
-		node = initScriptMode();
+		node = initScriptMode()
 	}
 	else if (options.mode === WAAWriter.BUFFER_MODE) {
-		node = initBufferMode();
+		node = initBufferMode()
 	}
 	else {
 		throw Error('Unknown mode. Choose from BUFFER_MODE or SCRIPT_MODE')
 	}
 
 	//connect node
-	node.connect(target);
+	node.connect(target)
 
 	write.end = () => {
 		if (isStopped) return;
-		node.disconnect();
+		node.disconnect()
 		isStopped = true;
 	}
 
@@ -92,10 +92,10 @@ function WAAWriter (target, options) {
 		if (isStopped) return;
 
 		if (buffer == null) {
-			return write.end();
+			return write.end()
 		}
 		else {
-			push(buffer);
+			push(buffer)
 		}
 		release = cb;
 	}
@@ -103,9 +103,11 @@ function WAAWriter (target, options) {
 
 	//push new data for the next WAA dinner
 	function push (chunk) {
-		if (!isAudioBuffer(chunk)) chunk = pcm.toAudioBuffer(chunk, format);
+		if (!isAudioBuffer(chunk)) {
+			chunk = util.create(chunk, channels)
+		}
 
-		data = util.concat(data, chunk);
+		data.append(chunk)
 
 		isEmpty = false;
 	}
@@ -117,22 +119,13 @@ function WAAWriter (target, options) {
 		//if still empty - return existing buffer
 		if (isEmpty) return data;
 
-		let output = data;
-
-		//FIXME: do all this ↓ "functional" stuff with loop, which is way faster
-		if (data.length <= size) {
-			data = util.create(size);
-			isEmpty = true;
-		}
-		else {
-			output = util.slice(output, 0, size);
-
-			//shorten known data
-			data = util.slice(data, size);
-		}
+		let output = data.slice(0, size)
+		data.consume(size)
 
 		//if size is too small, fill with silence
-		util.pad(output, size);
+		if (output.length < size) {
+			output = util.pad(output, size)
+		}
 
 		return output;
 	}
@@ -143,26 +136,26 @@ function WAAWriter (target, options) {
 	 */
 	function initScriptMode () {
 		//buffer source node
-		let bufferNode = context.createBufferSource();
+		let bufferNode = context.createBufferSource()
 		bufferNode.loop = true;
-		bufferNode.buffer = util.create(channels, samplesPerFrame);
+		bufferNode.buffer = util.create(samplesPerFrame, channels, {context: context})
 
-		node = context.createScriptProcessor(samplesPerFrame);
+		node = context.createScriptProcessor(samplesPerFrame)
 		node.addEventListener('audioprocess', function (e) {
 			//release causes synchronous pulling the pipeline
 			//so that we get a new data chunk
 			let cb = release;
 			release = null;
-			cb && cb();
+			cb && cb()
 
 			if (isStopped) return;
 
-			util.copy(shift(e.inputBuffer.length), e.outputBuffer);
-		});
+			util.copy(shift(e.inputBuffer.length), e.outputBuffer)
+		})
 
 		//start should be done after the connection, or there is a chance it won’t
-		bufferNode.connect(node);
-		bufferNode.start();
+		bufferNode.connect(node)
+		bufferNode.start()
 
 		return node;
 	}
@@ -177,18 +170,18 @@ function WAAWriter (target, options) {
 		let FOLD = 2;
 
 		//buffer source node
-		node = context.createBufferSource();
+		node = context.createBufferSource()
 		node.loop = true;
-		node.buffer = util.create(channels, samplesPerFrame * FOLD);
+		node.buffer = util.create(samplesPerFrame * FOLD, channels, {context: node.context})
 
 		//output buffer
 		let buffer = node.buffer;
 
 		//audio buffer realtime ticked cycle
 		//FIXME: find a way to receive target starving callback here instead of unguaranteed timeouts
-		setTimeout(tick);
+		setTimeout(tick)
 
-		node.start();
+		node.start()
 
 		//last played count, position from which there is no data filled up
 		let lastCount = 0;
@@ -209,7 +202,7 @@ function WAAWriter (target, options) {
 			//if offset has changed - notify processor to provide a new piece of data
 			if (lastCount - playedCount < samplesPerFrame) {
 				//send queued data chunk to buffer
-				util.copy(shift(), buffer, lastCount % buffer.length);
+				util.copy(shift(samplesPerFrame), buffer, lastCount % buffer.length)
 
 				//increase rendered count
 				lastCount += samplesPerFrame;
@@ -218,19 +211,19 @@ function WAAWriter (target, options) {
 				if (release) {
 					let cb = release;
 					release = null;
-					cb();
+					cb()
 				}
 
 				//call tick extra-time in case if there is a room for buffer
 				//it will plan timeout, if none
-				tick();
+				tick()
 			}
 			//else plan tick for the expected time of starving
 			else {
 				//time of starving is when played time reaches (last count time) - half-duration
 				let starvingTime = (lastCount - samplesPerFrame) / sampleRate;
 				let remainingTime = starvingTime - playedTime;
-				setTimeout(tick, remainingTime * 1000);
+				setTimeout(tick, remainingTime * 1000)
 			}
 		}
 	}

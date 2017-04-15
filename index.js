@@ -3,8 +3,8 @@
  */
 'use strict';
 
-const Writer = require('./writer');
-const Reader = require('./reader');
+const Writer = require('./write');
+const Reader = require('./read');
 Writer.Writer = Writer;
 Writer.Reader = Reader;
 

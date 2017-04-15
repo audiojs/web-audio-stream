@@ -1,9 +1,9 @@
-var test = require('tst');
+var test = require('tape');
 var context = require('audio-context');
 var Writable = require('./writable');
 var Readable = require('./readable');
-var Writer = require('./writer');
-var Reader = require('./reader');
+var Writer = require('./write');
+var Reader = require('./read');
 var AudioBuffer = require('audio-buffer');
 var util = require('audio-buffer-utils');
 var Generator = require('audio-generator');
@@ -15,163 +15,159 @@ var Source = require('./source');
 var pull = require('pull-stream');
 
 
-test('Plain function', function () {
-	test('Writer', function () {
-		let frame = 1024;
-		let write = Writer(context.destination, {
-			samplesPerFrame: 1024
-		});
-		let generate = Generate(t => Math.sin(440 * t * Math.PI * 2));
+test('Writer', function (t) {
+	let frame = 1024;
+	let write = Writer(context.destination, {
+		samplesPerFrame: 1024
+	});
+	let generate = Generate(t => Math.sin(440 * t * Math.PI * 2));
 
-		let isStopped = 0;
-		setTimeout(() => {
-			isStopped = 1;
-		}, 500);
-		function gen (err) {
-			if (err) throw err;
-			if (isStopped) {
-				write(null);
-				return;
-			}
-			let buf = generate(util.create(frame));
-			write(buf, gen);
+	let isStopped = 0;
+	setTimeout(() => {
+		isStopped = 1;
+	}, 500);
+	function gen (err) {
+		if (err) throw err;
+		if (isStopped) {
+			write(null);
+			t.end()
+			return;
 		}
-		gen();
+		let buf = generate(util.create(frame));
+		write(buf, gen);
+	}
+	gen();
+});
+
+test('Reader', function (t) {
+	let oscNode = context.createOscillator();
+	oscNode.type = 'sawtooth';
+	oscNode.frequency.value = 440;
+	oscNode.start();
+
+	let read = Reader(oscNode);
+
+	let count = 0;
+
+	read(function getData(err, buff) {
+		assert.notEqual(buff.getChannelData(0)[1], 0);
+		if (++count >= 5) {
+			read(null);
+		}
+		else {
+			read(getData);
+		}
 	});
 
-	test('Reader', function (done) {
-		let oscNode = context.createOscillator();
-		oscNode.type = 'sawtooth';
-		oscNode.frequency.value = 440;
-		oscNode.start();
-
-		let read = Reader(oscNode);
-
-		let count = 0;
-
-		read(function getData(err, buff) {
-			assert.notEqual(buff.getChannelData(0)[1], 0);
-			if (++count >= 5) {
-				read(null);
-			}
-			else {
-				read(getData);
-			}
-		});
-
-		setTimeout(() => {
-			assert.equal(count, 5);
-			done();
-		}, 200);
-	});
+	setTimeout(() => {
+		assert.equal(count, 5);
+		t.end();
+	}, 200);
 });
 
 
-test('Write chunk', function () {
-	test('AudioBuffer', function (done) {
-		var stream = Writable(context.destination);
-		// stream.connect(context.destination);
+test('Write AudioBuffer', function (t) {
+	var stream = Writable(context.destination);
+	// stream.connect(context.destination);
 
-		var buf = new AudioBuffer(1024*8);
-		util.noise(buf);
-		stream.write(buf);
+	var buf = new AudioBuffer(1024*8);
+	util.noise(buf);
+	stream.write(buf);
 
-		setTimeout(function () {
-			stream.end();
-			done();
-		}, 300);
-	});
+	setTimeout(function () {
+		stream.end();
+		t.end();
+	}, 300);
+});
 
-	test('Float32Array', function (done) {
-		var stream = Writable(context.destination);
+test('Write Float32Array', function (t) {
+	var stream = Writable(context.destination);
 
-		var buf = new AudioBuffer(1024*8);
-		util.noise(buf);
+	var buf = new AudioBuffer(1024*8);
+	util.noise(buf);
 
-		stream.write(buf.getChannelData(0));
+	stream.write(buf.getChannelData(0));
 
-		setTimeout(function () {
-			stream.end();
-			done();
-		}, 300);
-	});
+	setTimeout(function () {
+		stream.end();
+		t.end();
+	}, 300);
+});
 
-	test('Array', function (done) {
-		var stream = Writable(context.destination);
+test('Write Array', function (t) {
+	var stream = Writable(context.destination, {channels: 1});
 
-		var a = Array(1024).fill(0).map(function () {return Math.random()});
+	var a = Array(1024).fill(0).map(function () {return Math.random()});
 
-		stream.write(a);
+	stream.write(a);
 
-		setTimeout(function () {
-			stream.end();
-			done();
-		}, 300);
-	});
+	setTimeout(function () {
+		stream.end();
+		t.end();
+	}, 300);
+});
 
-	test('ArrayBuffer', function (done) {
-		var stream = Writable(context.destination);
+test('Write ArrayBuffer', function (t) {
+	var stream = Writable(context.destination);
 
-		var buf = new AudioBuffer(1024*8);
-		util.noise(buf);
+	var buf = new AudioBuffer(1024*8);
+	util.noise(buf);
 
-		stream.write(buf.getChannelData(0).buffer);
+	stream.write(buf.getChannelData(0).buffer);
 
-		setTimeout(function () {
-			stream.end();
-			done();
-		}, 300);
-	});
-
-
-	test('Buffer', function (done) {
-		var stream = Writable(context.destination);
-
-		var buf = new AudioBuffer(1024*8);
-		util.noise(buf);
-
-		buf = new Buffer(buf.getChannelData(0).buffer);
-
-		stream.write(buf);
-
-		setTimeout(function () {
-			stream.end();
-			done();
-		}, 300);
-	});
-
+	setTimeout(function () {
+		stream.end();
+		t.end();
+	}, 300);
 });
 
 
-test('Writable stream', function () {
-	test('Regular stream', function () {
-		Generator(function (time) {
-			return Math.sin(Math.PI * 2 * 440 * time);
-		}, {duration: 0.5})
-		.pipe(Writable(context.destination));
-	});
+test('Write Buffer', function (t) {
+	var stream = Writable(context.destination);
 
-	test('Chain of sound processing', function () {
-		var panner = context.createStereoPanner();
-		panner.pan.value = -1;
+	var buf = new AudioBuffer(1024*8);
+	util.noise(buf);
 
-		var stream = Writable(panner);
+	buf = new Buffer(buf.getChannelData(0).buffer);
 
-		Generator(function (time) {
-			return Math.sin(Math.PI * 2 * 80 * time);
-		}, {duration: 1})
-		.pipe(stream);
+	stream.write(buf);
 
-		// stream.connect();
-
-		panner.connect(context.destination);
-	});
-
-	test('Delayed connection/start');
+	setTimeout(function () {
+		stream.end();
+		t.end();
+	}, 300);
 });
 
 
-test('Readable stream', function (done) {
+test('Writable stream', function (t) {
+	Generator(function (time) {
+		return Math.sin(Math.PI * 2 * 440 * time);
+	}, {duration: 0.5})
+	.pipe(Writable(context.destination))
+	.on('end', t.end)
+});
+
+test('Chain of sound processing', function (t) {
+	var panner = context.createStereoPanner();
+	panner.pan.value = -1;
+
+	var stream = Writable(panner);
+
+	Generator(function (time) {
+		return Math.sin(Math.PI * 2 * 220 * time);
+	}, {duration: 1})
+	.pipe(stream)
+	.on('end', t.end)
+
+	// stream.connect();
+
+	panner.connect(context.destination);
+});
+
+test('Delayed connection/start');
+
+
+test('Readable stream', function (t) {
 	let oscNode = context.createOscillator();
 	oscNode.type = 'sawtooth';
 	oscNode.frequency.value = 440;
@@ -185,12 +181,12 @@ test('Readable stream', function (done) {
 
 	setTimeout(() => {
 		assert.equal(count, 5);
-		done();
+		t.end();
 	}, 200);
 });
 
 
-test('Pull stream sink', function (done) {
+test('Pull stream sink', function (t) {
 	let generate = Generate(Math.random);
 	let source = pull.infinite(generate);
 	let sink = Sink(context.destination);
@@ -203,11 +199,11 @@ test('Pull stream sink', function (done) {
 
 	setTimeout(() => {
 		sink.abort();
-		done();
+		t.end();
 	}, 200);
 });
 
-test('Pull stream source', function (done) {
+test('Pull stream source', function (t) {
 	let oscNode = context.createOscillator();
 	oscNode.type = 'sawtooth';
 	oscNode.frequency.value = 440;
@@ -228,7 +224,7 @@ test('Pull stream source', function (done) {
 
 	setTimeout(() => {
 		assert.equal(count, 5);
-		done();
+		t.end();
 	}, 200);
 });
 

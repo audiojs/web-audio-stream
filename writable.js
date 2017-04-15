@@ -8,7 +8,7 @@
 
 var inherits = require('inherits');
 var Writable = require('stream').Writable;
-var createWriter = require('./writer');
+var createWriter = require('./write');
 
 module.exports = WAAWritable;
 
@@ -36,19 +36,23 @@ function WAAWritable (node, options) {
 
 
 	//manage input pipes number
-	let that = this;
 	this.inputsCount = 0;
 	this.on('pipe', (source) => {
 		this.inputsCount++;
 
 		//do autoend
-		source.once('end', function () {
-			that.end();
+		source.once('end', () => {
+			this.end()
 		});
 
 	}).on('unpipe', (source) => {
 		this.inputsCount--;
-	});
+	})
+
+	//end writer
+	this.once('end', () => {
+		write.end()
+	})
 }
 
 
@@ -89,18 +93,17 @@ WAAWritable.prototype.end = function () {
 	this.isEnded = true;
 
 	var triggered = false;
-	this.once('end', function () {
+	this.once('end', () => {
 		triggered = true;
 	});
 	Writable.prototype.end.call(this);
 
 	//timeout cb, because native end emits after a tick
-	var that = this;
-	setTimeout(function () {
+	setTimeout(() => {
 		if (!triggered) {
-			that.emit('end');
+			this.emit('end');
 		}
 	});
 
-	return that;
+	return this;
 };
