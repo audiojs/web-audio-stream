@@ -80,6 +80,8 @@ gen()
 
 Writer is smart enough to recognize any type of data placed into it: [AudioBuffer](https://github.com/audiojs/audio-buffer), [AudioBufferList](https://github.com/audiojs/audio-buffer-list), ArrayBuffer, FloatArray, Buffer, Array. Make sure only that passed buffer format complies with passed options, ie. `samplerPerFrame`, `channels` etc.
 
+Note on performance. Internally writer uses [audio-buffer-list](https://github.com/audiojs/audio-buffer-list) to manage memory efficiently, providing pretty low latency.
+
 ### `let read = Read(sourceNode, options?)`
 
 Create reader from web _AudioNode_ with signature `read((err, audioBuffer) => {})`, returning audio frames data. To end reading, pass `read(null)`.
@@ -177,7 +179,7 @@ readable.on('data', buffer => {
 
 ## Pull-stream API
 
-Pull-stream classes internally use plain reader and writer and can be used in the same fashion.
+Pull-stream interfaces internally use plain reader and writer and can be used in the same fashion.
 
 ### `const {sink, source} = require('web-audio-stream/pull')`
 
@@ -187,7 +189,6 @@ const Source = require('web-audio-stream/source')
 ```
 
 ### `let sink = Sink(destNode, options?)`
-
 ### `let source = Source(srcNode, options?)`
 
 
