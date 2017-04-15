@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/audiojs/web-audio-stream.svg?branch=master)](https://travis-ci.org/audiojs/web-audio-stream) [![Greenkeeper badge](https://badges.greenkeeper.io/audiojs/web-audio-stream.svg)](https://greenkeeper.io/) [![stable](http://badges.github.io/stability-badges/dist/stable.svg)](http://github.com/badges/stability-badges)
 
-Interface between Web Audio API and streams. Send PCM data to Web Audio API (writable mode) or connect any AudioNode to stream (readable mode).
+Interface between Web Audio API and streams. Send AudioBuffer/Buffer/ArrayBuffer/FloatArray data to Web Audio API (writable mode) or connect any AudioNode to stream (readable mode). There are three types of connection available: as [plain funcitons](#API), as [streams](#Stream) or [pull-streams](#pull).
 
 ## Usage
 
@@ -12,8 +12,8 @@ const Generator = require('audio-generator')
 const {Readable, Writable} = require('web-audio-stream/stream')
 
 let oscillator = context.createOscillator()
-oscillator.type = 'sawtooth';
-oscillator.frequency.value = 440;
+oscillator.type = 'sawtooth'
+oscillator.frequency.value = 440
 oscillator.start()
 
 //pipe oscillator audio data to stream
@@ -27,6 +27,12 @@ Generator(time => Math.sin(Math.PI * 2 * time * 440))
 ```
 
 ## API
+
+Most methods share same optional `options` parameter with the following:
+
+* `mode` − 0 or 1, defines buffer or script mode of feeding data, may affect performance insignificantly.
+* `context` − audio context, defaults to [audio-context](https://npmjs.org/package/audio-context) module.
+* `samplesPerFrame` and `channels` define audio buffer params.
 
 ### `const {Read, Write} = require('web-audio-stream')`
 
@@ -43,58 +49,62 @@ Create function writing to web-audio-API AudioNode with the following signature:
 
 ```js
 const Writer = require('web-audio-stream/write')
+const Generate = require('audio-generator')
 const util = require('audio-buffer-utils')
 
 let write = Writer(context.destination, {
 	samplesPerFrame: 1024
 })
-let generate = Generate(t => Math.sin(440 * t * Math.PI * 2));
+let generate = Generate(t => Math.sin(440 * t * Math.PI * 2))
 
-let isStopped = 0;
+//add stopper
+let isStopped = 0
 setTimeout(() => {
-	isStopped = 1;
-}, 500);
+	isStopped = 1
+}, 500)
 
 function gen (err) {
-	if (err) throw err;
+	if (err) throw err
 	if (isStopped) {
-		write(null);
-		return;
+		write(null)
+		return
 	}
-	let buf = generate(util.create(frame));
+	//generate new audio buffer
+	let aBuf = generate(util.create(frame))
 
-	write(buf, gen);
+	//send audio buffer to audio node
+	write(aBuf, gen)
 }
-gen();
+gen()
 ```
 
-### `let read = Read(sourceNode)`
+### `let read = Read(sourceNode, options?)`
 
 Create reader from web _AudioNode_ with signature `read((err, audioBuffer) => {})`, returning audio frames data. To end reading, pass `read(null)`.
 
 ```js
 const Reader = require('web-audio-stream/read')
 
-let oscNode = context.createOscillator();
-oscNode.type = 'sawtooth';
-oscNode.frequency.value = 440;
-oscNode.start();
+let oscNode = context.createOscillator()
+oscNode.type = 'sawtooth'
+oscNode.frequency.value = 440
+oscNode.start()
 
-let read = Reader(oscNode);
+let read = Reader(oscNode)
 
-let count = 0;
+let count = 0
 
 read(function getData(err, audioBuffer) {
 	//output audioBuffer here or whatever
 
 	if (count++ >= 5) {
 		//end after 5th frame
-		read(null);
+		read(null)
 	}
 	else {
-		read(getData);
+		read(getData)
 	}
-});
+})
 ```
 
 ## Stream API
