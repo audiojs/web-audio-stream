@@ -37,7 +37,7 @@
   "dependencies": {
     "audio-buffer-list": "^2.0.0",
     "audio-buffer-utils": "^4.3.0",
-    "audio-context": "^0.1.0",
+    "audio-context": "^1.0.0",
     "inherits": "^2.0.1",
     "is-audio-buffer": "^1.0.1",
     "is-plain-obj": "^1.1.0",
