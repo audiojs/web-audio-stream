@@ -35,7 +35,7 @@
     "tape": "^4.6.3"
   },
   "dependencies": {
-    "audio-buffer-list": "^2.0.0",
+    "audio-buffer-list": "^2.0.6",
     "audio-buffer-utils": "^4.3.0",
     "audio-context": "^1.0.0",
     "inherits": "^2.0.1",

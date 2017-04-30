@@ -1,5 +1,5 @@
 var test = require('tape');
-var context = require('audio-context');
+var context = require('audio-context')();
 var Writable = require('./writable');
 var Readable = require('./readable');
 var Writer = require('./write');
@@ -14,6 +14,7 @@ var Sink = require('./sink');
 var Source = require('./source');
 var pull = require('pull-stream');
 
+//TODO: make node tests
 
 test('Writer', function (t) {
 	let frame = 1024;

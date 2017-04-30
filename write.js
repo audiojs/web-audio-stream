@@ -63,7 +63,7 @@ function WAAWriter (target, options) {
 	let node, release, isStopped, isEmpty = false;
 
 	//queued data to send to output
-	let data = new AudioBufferList()
+	let data = new AudioBufferList(0, channels)
 
 	//init proper mode
 	if (options.mode === WAAWriter.SCRIPT_MODE) {
@@ -120,6 +120,7 @@ function WAAWriter (target, options) {
 		if (isEmpty) return data;
 
 		let output = data.slice(0, size)
+
 		data.consume(size)
 
 		//if size is too small, fill with silence
