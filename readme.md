@@ -195,4 +195,4 @@ const Source = require('web-audio-stream/source')
 ## Related
 
 * [audio-speaker](https://github.com/audiojs/audio-speaker) — node/browser speaker stream.
-* [audio-through](https://github.com/audiojs/audio-speaker) — universal audio stream class.
+* [audio-through](https://github.com/audiojs/audio-through) — universal audio stream class.
